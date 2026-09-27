@@ -30,7 +30,7 @@ redirect /d/[id] ◄────────────────────
 - **Free-use limits** (`src/lib/allowance.ts`): 1 free diagnosis and 1 free quote check per anonymous cookie, max 5 anonymous runs per IP per day, 25 runs/day fair use for signed-in users, and 2 (anonymous) / 6 (signed-in) follow-ups per diagnosis.
 - **Paywall and trial** (`src/lib/access.ts`, `src/lib/billing.ts`):
   - The first diagnosis is free with no account. The second requires an account, and creating one starts a 7-day free trial with no card (`users.trial_ends_at`, started by `onSignedIn` in `src/lib/onboarding.ts`).
-  - After the trial, new diagnoses, quote checks and follow-ups need a subscription: $9.99/month or $49/year (`src/lib/plans.ts`). History and past results stay readable.
+  - After the trial, new diagnoses, quote checks and follow-ups need a subscription: $9.99/month or $69.99/year (`src/lib/plans.ts`). History and past results stay readable.
   - Stripe statuses `active`, `trialing` and `past_due` (while Stripe retries the card) keep access on.
   - Subscribing during the trial with 48h+ left carries the rest of the trial into Stripe, so the first charge is when the free trial would have ended.
   - The paywall only turns on once `STRIPE_SECRET_KEY` and both price ids are set.
@@ -89,7 +89,7 @@ Dev-only previews that need no keys:
 
 ### 3. Stripe
 
-1. **Product and prices.** Create a product "Home Doctor" with two recurring prices, $9.99/month and $49/year. Put their ids in `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_YEARLY`.
+1. **Product and prices.** Create a product "Home Doctor" with two recurring prices, $9.99/month and $69.99/year. Put their ids in `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_YEARLY`.
 2. **Webhook.** Developers → Webhooks → add endpoint `https://<your-domain>/api/stripe/webhook` with these events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`. Put its signing secret in `STRIPE_WEBHOOK_SECRET`.
 3. **Customer Portal.** Settings → Billing → Customer portal: allow cancellations, payment method updates, invoice history, and switching between the two prices.
 4. **Local testing.** Run `stripe listen --forward-to localhost:3000/api/stripe/webhook` and use its `whsec_` secret. Test card `4242 4242 4242 4242`.

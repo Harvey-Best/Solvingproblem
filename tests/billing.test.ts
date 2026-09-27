@@ -87,8 +87,9 @@ describe("trial math", () => {
 describe("plans", () => {
   it("match the advertised prices", () => {
     expect(PLANS.monthly.price).toBe(9.99);
-    expect(PLANS.yearly.price).toBe(49);
-    expect(yearlySavingsPercent()).toBe(59);
+    expect(PLANS.yearly.price).toBe(69.99);
+    expect(yearlySavingsPercent()).toBe(41);
+    expect(PLANS.yearly.note).toContain(`$${(PLANS.yearly.price / 12).toFixed(2)} a month`);
     expect(PLANS.yearly.note).toContain(`${yearlySavingsPercent()}%`);
     expect(planForInterval("month")?.id).toBe("monthly");
     expect(planForInterval("year")?.id).toBe("yearly");
@@ -113,7 +114,7 @@ describe("email templates", () => {
     const inTwoDays = trialEndingEmail({ trialEndsAt: new Date(NOW.getTime() + 44 * HOUR), siteUrl, now: NOW });
     expect(inTwoDays.subject).toBe("Your Home Doctor trial ends in 2 days");
     expect(inTwoDays.html).toContain("$9.99/month");
-    expect(inTwoDays.html).toContain("$49/year");
+    expect(inTwoDays.html).toContain("$69.99/year");
     expect(inTwoDays.html).toContain(`${siteUrl}/pricing`);
     expect(inTwoDays.text).toContain("nothing is charged unless you subscribe");
     const tomorrow = trialEndingEmail({ trialEndsAt: new Date(NOW.getTime() + 20 * HOUR), siteUrl, now: NOW });

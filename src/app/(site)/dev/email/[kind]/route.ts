@@ -16,7 +16,7 @@ export async function GET(request: Request, ctx: RouteContext<"/dev/email/[kind]
         ? trialEndingEmail({ trialEndsAt: new Date(now.getTime() + 44 * 60 * 60 * 1000), siteUrl, now })
         : kind === "receipt"
           ? receiptEmail({
-              amountCents: 4900,
+              amountCents: 6999,
               currency: "usd",
               plan: PLANS.yearly,
               paidAt: now,
