@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { IdentifyViewer } from "@/components/analytics/identify-viewer";
 import { JsonLd } from "@/components/json-ld";
 import { HouseCallTemplate } from "@/components/landing/house-call";
 import { Faq, GuidesTeaser, HowItWorks } from "@/components/landing/landing-sections";
@@ -32,6 +33,7 @@ async function LandingNav() {
   const { userId } = await getViewer();
   return (
     <nav aria-label="Main" className="flex items-center gap-1">
+      <IdentifyViewer userId={userId} />
       {/* Phones get the guides from the page body instead; the header stays one row. */}
       <Link href="/guides" className={`${navLink} hidden sm:inline-block`}>
         Guides

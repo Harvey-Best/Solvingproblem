@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { IdentifyViewer } from "@/components/analytics/identify-viewer";
 import { Button } from "@/components/ui/button";
 import { getViewer } from "@/lib/viewer";
 
@@ -26,6 +27,7 @@ export async function SiteHeader() {
           <Logo />
         </Link>
         <nav className="flex items-center gap-1">
+          <IdentifyViewer userId={userId} />
           {userId ? (
             <>
               <Button asChild variant="ghost" size="sm">

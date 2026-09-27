@@ -2,7 +2,7 @@
 
 Point your phone at a household problem, get a structured diagnosis: what it is, how urgent, DIY or pro, steps, parts with prices, a fair pro price range, and what to say to the pro.
 
-**Stack:** Next.js 16 (App Router, TypeScript) · Tailwind v4 · shadcn/ui · Supabase (auth, Postgres, Storage) · Anthropic API · Stripe (Checkout, Customer Portal, webhooks) · Resend · Vercel (hosting + cron). PostHog lands in Phase 4.
+**Stack:** Next.js 16 (App Router, TypeScript) · Tailwind v4 · shadcn/ui · Supabase (auth, Postgres, Storage) · Anthropic API · Stripe (Checkout, Customer Portal, webhooks) · Resend · PostHog (product analytics) · Vercel (hosting + cron).
 
 ## How it works
 
@@ -54,6 +54,10 @@ redirect /d/[id] ◄────────────────────
   - `/llms.txt`: a markdown summary of the product, the guides and the FAQ for AI assistants, built from the same data as the pages.
   - The landing FAQ (`LANDING_FAQS`) and the guides' quick answers are written as short, self-contained answers that can be quoted directly.
 - **Attribution.** First-touch `utm_*` and click ids (`fbclid`, `ttclid`, `gclid`, `rdt_cid`) are stored in the `hd_utm` cookie on landing. At sign-in they're copied to `users.utm`, and to `diagnoses.utm` for anonymous runs.
+- **Analytics** (PostHog, off until `NEXT_PUBLIC_POSTHOG_KEY` is set; events are only logged without it):
+  - Browser events go through `/ingest` on our own domain (rewritten to PostHog in `next.config.ts`), so ad blockers don't drop them. `src/instrumentation-client.ts` starts PostHog before hydration: pageviews on every navigation, no session replay, no click autocapture.
+  - Events: `landing_view`, `diagnose_start`, `image_uploaded`, `diagnosis_complete`, `followup_sent` and `quote_check_complete` from the browser (`track()` in `src/lib/analytics.ts`); `signup`, `trial_start`, `subscribe` and `cancel` from the server (`trackServer()` in `src/lib/analytics-server.ts`, sent right away and awaited with `after()` so serverless functions don't drop them).
+  - Signed-in users are identified by their Supabase user id, never the email, so their anonymous events from before sign-up join the same person. Sign-out resets it. Event properties never carry emails or free text.
 
 ## Setup
 
@@ -112,7 +116,7 @@ A dashboard **Redeploy** rebuilds the same commit as the deployment you click it
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Route type generation + `tsc` |
-| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO, billing, webhook, emails) |
+| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO, billing, webhook, emails, analytics) |
 
 ## Quality review
 
@@ -136,3 +140,4 @@ from diagnoses where status = 'complete' group by 1, 2;
 - [x] **Phase 2:** quote check, history, follow-up threads
 - [x] **Phase 3:** Stripe (trial, checkout, portal, webhooks), paywall, emails
 - [ ] **Phase 4:** mobile polish, loading states, share card, PostHog
+  - [x] PostHog: client and server events, first-party `/ingest` proxy, identify by user id
