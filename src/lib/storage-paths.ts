@@ -17,7 +17,8 @@ export const ALLOWED_IMAGE_TYPES = {
 export type AllowedImageType = keyof typeof ALLOWED_IMAGE_TYPES;
 
 export function isAllowedImageType(type: string): type is AllowedImageType {
-  return type in ALLOWED_IMAGE_TYPES;
+  // hasOwn, not `in`: "constructor" and friends are on every object's prototype.
+  return Object.hasOwn(ALLOWED_IMAGE_TYPES, type);
 }
 
 export type Owner = { userId: string | null; anonId: string | null };

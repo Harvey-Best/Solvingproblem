@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { buildUploadPath, isAllowedImageType } from "@/lib/storage-paths";
+import { buildUploadPath, isAllowedImageType, uploadPrefix } from "@/lib/storage-paths";
 import { createAdminClient, UPLOADS_BUCKET } from "@/lib/supabase/admin";
 import { getViewerForWrite } from "@/lib/viewer";
 
 const bodySchema = z.object({ contentType: z.string() });
+
+/**
+ * Photos one visitor can upload per hour. A diagnosis or quote check takes up
+ * to 3, and signed-in users can run 25 a day, so this only stops floods.
+ */
+const UPLOADS_PER_HOUR = 40;
+const HOUR_MS = 60 * 60 * 1000;
 
 /**
  * Mints a one-time signed upload URL under the caller's own prefix. The
@@ -28,6 +35,18 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
+  const { data: recent } = await admin.storage.from(UPLOADS_BUCKET).list(uploadPrefix(viewer)!, {
+    limit: UPLOADS_PER_HOUR,
+    sortBy: { column: "created_at", order: "desc" },
+  });
+  const since = Date.now() - HOUR_MS;
+  if ((recent ?? []).filter((o) => o.created_at && Date.parse(o.created_at) > since).length >= UPLOADS_PER_HOUR) {
+    return NextResponse.json(
+      { code: "rate_limited", message: "That's a lot of photos for one hour. Please try again later." },
+      { status: 429 }
+    );
+  }
+
   const { data, error } = await admin.storage.from(UPLOADS_BUCKET).createSignedUploadUrl(path);
   if (error || !data) {
     console.error("createSignedUploadUrl failed", error);

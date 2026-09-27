@@ -33,6 +33,8 @@ export async function sendWelcomeEmail({
 }
 
 const REMINDER_WINDOW_MS = 48 * 60 * 60 * 1000;
+const PAGE_SIZE = 500;
+const ID_CHUNK = 100;
 
 /**
  * Daily job: everyone whose free trial ends within the next 48 hours and who
@@ -40,23 +42,35 @@ const REMINDER_WINDOW_MS = 48 * 60 * 60 * 1000;
  */
 export async function sendTrialEndingEmails(now = new Date()) {
   const admin = createAdminClient();
-  const { data: users, error } = await admin
-    .from("users")
-    .select("id, email, trial_ends_at")
-    .gt("trial_ends_at", now.toISOString())
-    .lte("trial_ends_at", new Date(now.getTime() + REMINDER_WINDOW_MS).toISOString())
-    .not("email", "is", null)
-    .returns<{ id: string; email: string; trial_ends_at: string }[]>();
-  if (error) throw error;
-  if (!users?.length) return { candidates: 0, sent: 0, skipped: 0, failed: 0 };
+  const users: { id: string; email: string; trial_ends_at: string }[] = [];
+  // Page past PostgREST's row cap.
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await admin
+      .from("users")
+      .select("id, email, trial_ends_at")
+      .gt("trial_ends_at", now.toISOString())
+      .lte("trial_ends_at", new Date(now.getTime() + REMINDER_WINDOW_MS).toISOString())
+      .not("email", "is", null)
+      .order("id")
+      .range(from, from + PAGE_SIZE - 1)
+      .returns<{ id: string; email: string; trial_ends_at: string }[]>();
+    if (error) throw error;
+    users.push(...(data ?? []));
+    if (!data || data.length < PAGE_SIZE) break;
+  }
+  if (!users.length) return { candidates: 0, sent: 0, skipped: 0, failed: 0 };
 
-  const { data: subs, error: subsError } = await admin
-    .from("subscriptions")
-    .select("user_id")
-    .in("user_id", users.map((u) => u.id))
-    .in("status", [...ENTITLED_STATUSES]);
-  if (subsError) throw subsError;
-  const subscribed = new Set((subs ?? []).map((s) => s.user_id as string));
+  // In chunks, so the id list never outgrows the request URL.
+  const subscribed = new Set<string>();
+  for (let i = 0; i < users.length; i += ID_CHUNK) {
+    const { data: subs, error: subsError } = await admin
+      .from("subscriptions")
+      .select("user_id")
+      .in("user_id", users.slice(i, i + ID_CHUNK).map((u) => u.id))
+      .in("status", [...ENTITLED_STATUSES]);
+    if (subsError) throw subsError;
+    for (const sub of subs ?? []) subscribed.add(sub.user_id as string);
+  }
 
   const tally = { candidates: users.length, sent: 0, skipped: 0, failed: 0 };
   for (const user of users) {

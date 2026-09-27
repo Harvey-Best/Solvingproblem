@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildUploadPath, pathBelongsTo } from "@/lib/storage-paths";
+import { buildUploadPath, isAllowedImageType, pathBelongsTo } from "@/lib/storage-paths";
 import { safeNextPath } from "@/lib/utils";
 import { extractAttribution } from "@/lib/utm";
 
@@ -30,6 +30,15 @@ describe("upload paths", () => {
     expect(pathBelongsTo(`a/${ANON}/../${OTHER}/${FILE}.jpg`, owner)).toBe(false);
     expect(pathBelongsTo(`a/${ANON}/${FILE}.gif`, owner)).toBe(false);
     expect(pathBelongsTo(`u/${USER}/${FILE}.jpg`, { userId: null, anonId: ANON })).toBe(false);
+  });
+});
+
+describe("isAllowedImageType", () => {
+  it("accepts only the listed types, not prototype keys", () => {
+    expect(isAllowedImageType("image/webp")).toBe(true);
+    expect(isAllowedImageType("image/gif")).toBe(false);
+    expect(isAllowedImageType("constructor")).toBe(false);
+    expect(isAllowedImageType("toString")).toBe(false);
   });
 });
 
