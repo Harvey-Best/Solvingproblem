@@ -1,9 +1,11 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { rotateAnonId } from "@/lib/claim";
+import { LOGIN_NONCE_COOKIE, loginNonceCookieOptions } from "@/lib/cookies";
 import { env } from "@/lib/env";
 import { onSignedIn } from "@/lib/onboarding";
 import { createClient } from "@/lib/supabase/server";
@@ -25,12 +27,16 @@ export async function sendMagicLink(_prev: LoginState, formData: FormData): Prom
   // Send the link back to whichever deployment the user is on (prod, preview,
   // localhost). Supabase only honors origins on its redirect allowlist.
   const origin = (await headers()).get("origin") || env.siteUrl;
+  // Ties the emailed link to this browser, so the callback knows whether it's
+  // safe to attach this browser's anonymous work to the account.
+  const nonce = crypto.randomUUID();
+  (await cookies()).set(LOGIN_NONCE_COOKIE, nonce, loginNonceCookieOptions);
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email: email.data,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}&n=${nonce}`,
     },
   });
   if (error) {
@@ -58,12 +64,16 @@ export async function verifyEmailCode(_prev: LoginState, formData: FormData): Pr
     return { step: "code", email: email.data, error: "That code didn't work. It may have expired." };
   }
 
-  await onSignedIn(data.user.id);
+  // The code was typed into this browser, so its anonymous work is theirs.
+  await onSignedIn(data.user.id, { claimWork: true });
   redirect(next);
 }
 
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
+  // Whoever uses this device next starts clean, and can't have their
+  // anonymous work claimed by this account on its next sign-in.
+  await rotateAnonId();
   redirect("/");
 }

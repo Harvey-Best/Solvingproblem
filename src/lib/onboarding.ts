@@ -9,11 +9,12 @@ import { sendWelcomeEmail } from "@/lib/email/transactional";
 
 /**
  * Runs after every successful sign-in (magic link, email code, Google).
- * Claims anonymous work, and on the first sign-in starts the free trial and
+ * Claims anonymous work when the sign-in started in this browser (see
+ * claimAnonymousWork), and on the first sign-in starts the free trial and
  * queues the welcome email after the response, so sign-in isn't slowed down.
  */
-export async function onSignedIn(userId: string) {
-  await claimAnonymousWork(userId);
+export async function onSignedIn(userId: string, { claimWork }: { claimWork: boolean }) {
+  await claimAnonymousWork(userId, { claimWork });
 
   let trial;
   try {

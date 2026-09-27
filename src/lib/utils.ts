@@ -14,12 +14,26 @@ export function isUuid(value: unknown): value is string {
   return typeof value === "string" && UUID_RE.test(value);
 }
 
-/** Only allow same-site relative redirects ("/foo"), never "//evil.com" or absolute URLs. */
+const SAFE_BASE = "https://home-doctor.invalid";
+
+/**
+ * Only allow same-site relative redirects ("/foo"), never "//evil.com" or
+ * absolute URLs. Control characters and backslashes are rejected outright,
+ * since browsers strip tabs and newlines ("/\t/evil.com" becomes "//evil.com")
+ * and treat "\" like "/". The result is re-serialized through URL, so what we
+ * redirect to is exactly what we checked.
+ */
 export function safeNextPath(next: string | null | undefined, fallback = "/") {
-  if (!next || !next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
+  // eslint-disable-next-line no-control-regex
+  if (!next || !next.startsWith("/") || /[\u0000-\u001f\u007f\\]/.test(next)) return fallback;
+  let url: URL;
+  try {
+    url = new URL(next, SAFE_BASE);
+  } catch {
     return fallback;
   }
-  return next;
+  if (url.origin !== SAFE_BASE) return fallback;
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 export function formatUsd(n: number) {
