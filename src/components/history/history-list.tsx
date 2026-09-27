@@ -26,15 +26,15 @@ function Row({ item }: { item: HistoryItem }) {
         <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-(image:--grad-soft)">
           {item.thumbUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL
-            <img src={item.thumbUrl} alt="" className="size-full object-cover" />
+            <img src={item.thumbUrl} alt="" width={64} height={64} loading="lazy" className="size-full object-cover" />
           ) : (
             <Icon className="size-6 text-primary" />
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{item.title}</p>
-          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Icon className="size-3" />
+          <p className="line-clamp-2 break-words font-semibold leading-snug">{item.title}</p>
+          <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Icon className="size-3 shrink-0" />
             {item.kind === "diagnosis" ? categoryLabel(item.category) : "Quote check"} ·{" "}
             {dateFormat.format(new Date(item.createdAt))}
           </p>

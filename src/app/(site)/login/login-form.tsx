@@ -75,16 +75,22 @@ export function LoginForm({ next, linkError }: { next: string; linkError: boolea
             autoFocus
             required
           />
-          {state.error && <p className="text-sm text-destructive">{state.error}</p>}
-          <Button type="submit" size="lg" className="w-full" disabled={verifying}>
+          {state.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
+          <Button type="submit" size="lg" className="w-full" disabled={verifying || sending}>
             {verifying && <Loader2 className="animate-spin" />} Sign in
           </Button>
         </form>
         <form action={sendAction}>
           <input type="hidden" name="email" value={state.email} />
           <input type="hidden" name="next" value={next} />
-          <Button type="submit" variant="link" className="w-full" disabled={sending}>
-            Resend email
+          <Button type="submit" variant="link" className="h-11 w-full" disabled={sending || verifying}>
+            {sending ? (
+              <>
+                <Loader2 className="animate-spin" /> Sending…
+              </>
+            ) : (
+              "Resend email"
+            )}
           </Button>
         </form>
       </div>
@@ -99,11 +105,11 @@ export function LoginForm({ next, linkError }: { next: string; linkError: boolea
         size="lg"
         className="w-full"
         onClick={signInWithGoogle}
-        disabled={googleLoading}
+        disabled={googleLoading || sending}
       >
         {googleLoading ? <Loader2 className="animate-spin" /> : <GoogleIcon />} Continue with Google
       </Button>
-      {googleError && <p className="text-sm text-destructive">{googleError}</p>}
+      {googleError && <p role="alert" className="text-sm text-destructive">{googleError}</p>}
 
       <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
         <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
@@ -122,8 +128,8 @@ export function LoginForm({ next, linkError }: { next: string; linkError: boolea
           defaultValue={state.email}
           required
         />
-        {state.error && <p className="text-sm text-destructive">{state.error}</p>}
-        <Button type="submit" size="lg" className="w-full" disabled={sending}>
+        {state.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
+        <Button type="submit" size="lg" className="w-full" disabled={sending || googleLoading}>
           {sending && <Loader2 className="animate-spin" />} Email me a sign-in link
         </Button>
       </form>

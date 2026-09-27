@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { startCheckout } from "@/app/(site)/billing/actions";
 import { PendingButton } from "@/components/billing/pending-button";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { PLANS, PLAN_IDS, TRIAL_DAYS, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
@@ -90,6 +91,22 @@ export function PlanPicker({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+/** Loading stand-in for PlanPicker, with the same card sizes. */
+export function PlanPickerSkeleton() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      {PLAN_IDS.map((id) => (
+        <div key={id} className="flex flex-col rounded-3xl border bg-card p-5">
+          <Skeleton className="my-[3px] h-3.5 w-20" />
+          <Skeleton className="mt-3 h-9 w-32" />
+          <Skeleton className="mt-2.5 h-3.5 w-40" />
+          <Skeleton className="mt-6 h-12 rounded-full" />
+        </div>
+      ))}
     </div>
   );
 }

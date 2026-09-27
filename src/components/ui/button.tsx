@@ -22,7 +22,8 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-8 gap-1.5 px-3",
+        // Looks compact, but tap-area keeps the touch target at 44px.
+        sm: "tap-area h-8 gap-1.5 px-3",
         lg: "h-12 px-6 text-base",
         xl: "h-14 px-8 text-lg font-semibold",
         icon: "size-10",

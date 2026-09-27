@@ -76,6 +76,20 @@
   color: transparent;
 }
 
+/* Grows a small control's tap area to at least 44x44px without changing its layout. */
+@utility tap-area {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -85,5 +99,17 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* viewport-fit=cover lets the page run under the notch, so keep content clear of it in landscape. */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  /* Room below the page for the fixed SubmitBar (1px border + 12px + 56px button + bottom inset), so the footer never hides behind it. */
+  body:has([data-slot="submit-bar"]) {
+    padding-bottom: calc(4.3125rem + max(1rem, env(safe-area-inset-bottom)));
+  }
+  /* Clear keyboard focus ring for links and custom controls; Button and inputs draw their own ring instead. */
+  :where(a, button, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }

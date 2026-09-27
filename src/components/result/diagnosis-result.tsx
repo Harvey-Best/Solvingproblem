@@ -86,7 +86,7 @@ export function DiagnosisResult({
           {imageUrls.map((url, i) => (
             <a key={i} href={url} target="_blank" rel="noreferrer" className="block">
               {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
-              <img src={url} alt={`Photo ${i + 1}`} className="size-20 rounded-xl border object-cover" />
+              <img src={url} alt={`Photo ${i + 1}`} width={80} height={80} className="size-20 rounded-xl border bg-muted object-cover" />
             </a>
           ))}
         </div>
@@ -109,7 +109,7 @@ export function DiagnosisResult({
             </Badge>
           )}
         </div>
-        <h1 className="text-balance font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight">{d.title}</h1>
+        <h1 className="text-balance break-words font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight">{d.title}</h1>
       </div>
 
       {emergency ? (
@@ -224,7 +224,7 @@ export function DiagnosisResult({
                   {d.parts.map((part, i) => (
                     <li key={i} className="space-y-2 p-3">
                       <div className="flex items-start justify-between gap-3">
-                        <p className="text-sm font-medium">{part.name}</p>
+                        <p className="min-w-0 break-words text-sm font-medium">{part.name}</p>
                         <p className="shrink-0 text-sm font-semibold">
                           {formatUsdRange(part.price_low, part.price_high)}
                         </p>
@@ -234,7 +234,7 @@ export function DiagnosisResult({
                           href={homeDepotUrl(part.search_query)}
                           target="_blank"
                           rel="noreferrer sponsored"
-                          className="inline-flex items-center gap-1 rounded-md bg-orange-50 px-2.5 py-1.5 text-xs font-medium text-orange-800 hover:bg-orange-100"
+                          className="inline-flex h-10 items-center gap-1 rounded-lg bg-orange-50 px-3 text-xs font-medium text-orange-800 hover:bg-orange-100"
                         >
                           Home Depot <ExternalLink className="size-3" />
                         </a>
@@ -242,7 +242,7 @@ export function DiagnosisResult({
                           href={amazonUrl(part.search_query)}
                           target="_blank"
                           rel="noreferrer sponsored"
-                          className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-800 hover:bg-slate-200"
+                          className="inline-flex h-10 items-center gap-1 rounded-lg bg-slate-100 px-3 text-xs font-medium text-slate-800 hover:bg-slate-200"
                         >
                           Amazon <ExternalLink className="size-3" />
                         </a>

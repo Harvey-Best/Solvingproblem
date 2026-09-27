@@ -72,7 +72,7 @@ export function QuoteForm() {
   }
 
   return (
-    <div className="space-y-8 pb-28">
+    <div className="space-y-8">
       {submitting && <DiagnosingOverlay messages={QUOTE_MESSAGES} />}
 
       <section className="space-y-3">
@@ -100,17 +100,23 @@ export function QuoteForm() {
       </section>
 
       {error && (
-        <div className="flex gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+        <div role="alert" className="flex gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           <AlertCircle className="mt-0.5 size-4 shrink-0" /> {error}
         </div>
       )}
 
       <SubmitBar>
-        <Button size="xl" className="w-full" onClick={submit} disabled={!canSubmit}>
-          {busy ? (
+        <Button size="xl" className="w-full" onClick={submit} disabled={!canSubmit} aria-busy={submitting || busy}>
+          {submitting ? (
+            <>
+              <Loader2 className="animate-spin" /> Checking…
+            </>
+          ) : busy ? (
             <>
               <Loader2 className="animate-spin" /> Uploading pages…
             </>
+          ) : hasErrors ? (
+            "Retry or remove the failed page"
           ) : readyPaths.length === 0 ? (
             "Add a photo of the quote"
           ) : (
