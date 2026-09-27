@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildUploadPath, pathBelongsTo } from "@/lib/storage-paths";
+import { buildUploadPath, isAllowedImageType, pathBelongsTo } from "@/lib/storage-paths";
 import { safeNextPath } from "@/lib/utils";
 import { extractAttribution } from "@/lib/utm";
 
@@ -33,12 +33,27 @@ describe("upload paths", () => {
   });
 });
 
+describe("isAllowedImageType", () => {
+  it("accepts only the listed types, not prototype keys", () => {
+    expect(isAllowedImageType("image/webp")).toBe(true);
+    expect(isAllowedImageType("image/gif")).toBe(false);
+    expect(isAllowedImageType("constructor")).toBe(false);
+    expect(isAllowedImageType("toString")).toBe(false);
+  });
+});
+
 describe("safeNextPath", () => {
   it.each([
     ["/d/abc", "/d/abc"],
     ["//evil.com", "/"],
     ["https://evil.com", "/"],
     ["/\\evil.com", "/"],
+    ["/\t/evil.com", "/"],
+    ["/\n/evil.com", "/"],
+    ["/d\\..\\/evil.com", "/"],
+    ["/pricing?plan=yearly#faq", "/pricing?plan=yearly#faq"],
+    ["/a/../b", "/b"],
+    ["", "/"],
     [null, "/"],
   ])("%j -> %j", (input, expected) => {
     expect(safeNextPath(input)).toBe(expected);

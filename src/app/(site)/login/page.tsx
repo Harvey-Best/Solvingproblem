@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { isGoogleSignInEnabled } from "@/lib/auth-providers";
 import { safeNextPath } from "@/lib/utils";
 import { getViewer } from "@/lib/viewer";
 
@@ -17,7 +18,7 @@ const REASONS: Record<string, { title: string; description: string }> = {
   },
   trial: {
     title: "Start your 7-day free trial",
-    description: "Create an account with your email or Google. No card needed.",
+    description: "Create an account in a few seconds. No card needed.",
   },
   subscribe: {
     title: "Sign in to choose a plan",
@@ -43,7 +44,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
   const next = safeNextPath(typeof searchParams.next === "string" ? searchParams.next : null, "/diagnose");
   const reason = typeof searchParams.reason === "string" ? REASONS[searchParams.reason] : undefined;
 
-  const { userId } = await getViewer();
+  const [{ userId }, googleEnabled] = await Promise.all([getViewer(), isGoogleSignInEnabled()]);
   if (userId) redirect(next);
 
   return (
@@ -56,7 +57,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm next={next} linkError={searchParams.error === "link"} />
+          <LoginForm next={next} linkError={searchParams.error === "link"} googleEnabled={googleEnabled} />
         </CardContent>
       </Card>
     </main>

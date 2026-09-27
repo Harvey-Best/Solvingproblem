@@ -48,11 +48,11 @@ export function TrialStatus({ access }: { access: Access | undefined }) {
   if (access.kind === "trial") {
     return (
       <p className="mt-3 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-full bg-secondary px-3.5 py-1.5 text-sm text-secondary-foreground">
-        <Clock className="size-4" />
+        <Clock className="size-4 shrink-0" />
         <span>
           Free trial: <strong>{access.daysLeft === 1 ? "1 day" : `${access.daysLeft} days`} left</strong>
         </span>
-        <Link href="/pricing" className="font-semibold underline underline-offset-2">
+        <Link href="/pricing" className="tap-area font-semibold underline underline-offset-2">
           See plans
         </Link>
       </p>
@@ -61,8 +61,8 @@ export function TrialStatus({ access }: { access: Access | undefined }) {
   if (access.kind === "subscribed" && access.pastDue) {
     return (
       <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-100 px-3.5 py-1.5 text-sm text-amber-950">
-        <AlertTriangle className="size-4" /> Your last payment didn&apos;t go through.
-        <Link href="/account" className="font-semibold underline underline-offset-2">
+        <AlertTriangle className="size-4 shrink-0" /> Your last payment didn&apos;t go through.
+        <Link href="/account" className="tap-area shrink-0 font-semibold underline underline-offset-2">
           Update card
         </Link>
       </p>

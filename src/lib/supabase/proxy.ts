@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { ANON_COOKIE, UTM_COOKIE, anonCookieOptions, utmCookieOptions } from "@/lib/cookies";
+import { ANON_COOKIE, UTM_COOKIE, anonCookieOptions, supabaseCookieOptions, utmCookieOptions } from "@/lib/cookies";
 import { extractAttribution } from "@/lib/utm";
 import { isUuid } from "@/lib/utils";
 
@@ -33,6 +33,7 @@ export async function updateSession(request: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (url && key) {
     const supabase = createServerClient(url, key, {
+      cookieOptions: supabaseCookieOptions,
       cookies: {
         getAll() {
           return request.cookies.getAll();

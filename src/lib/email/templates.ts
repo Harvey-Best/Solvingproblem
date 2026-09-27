@@ -36,6 +36,15 @@ export function formatReceiptDate(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "America/New_York" });
 }
 
+/** Calendar days from `from` to `to` in US Eastern, so "tomorrow" matches the date the email names. */
+export function easternDaysBetween(from: Date, to: Date): number {
+  const day = (d: Date) => {
+    const [y, m, dd] = d.toLocaleDateString("en-CA", { timeZone: "America/New_York" }).split("-").map(Number);
+    return Date.UTC(y, m - 1, dd) / 86_400_000;
+  };
+  return day(to) - day(from);
+}
+
 export function formatMoney(cents: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
 }
@@ -110,8 +119,8 @@ export function welcomeEmail({ name, trialEndsAt, siteUrl }: { name: string | nu
 
 export function trialEndingEmail({ trialEndsAt, siteUrl, now = new Date() }: { trialEndsAt: Date; siteUrl: string; now?: Date }): EmailContent {
   const ends = formatEmailDate(trialEndsAt);
-  const hours = (trialEndsAt.getTime() - now.getTime()) / 3_600_000;
-  const when = hours <= 30 ? "tomorrow" : "in 2 days";
+  const days = easternDaysBetween(now, trialEndsAt);
+  const when = days <= 0 ? "today" : days === 1 ? "tomorrow" : `in ${days} days`;
   const heading = `Your free trial ends ${when}`;
   const { monthly, yearly } = PLANS;
   const body = [

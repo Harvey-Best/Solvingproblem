@@ -28,7 +28,22 @@ function both(a: string, b: string, gap: number) {
   return new RegExp(`\\b${a}\\b${GAP(gap)}\\b${b}\\b|\\b${b}\\b${GAP(gap)}\\b${a}\\b`, "i");
 }
 
-const RULES: { hazard: EscalatingHazard; patterns: RegExp[]; unless?: RegExp }[] = [
+/**
+ * A pattern, optionally with a narrow exemption. Exemptions are checked
+ * against the one sentence the pattern matched in (plus the full text, for
+ * signals that override them), never the whole message: "the outlet behind
+ * the stove is sparking" is still an electrical fault, and a stove mentioned
+ * in an earlier answer can't switch off a later report of sparks.
+ */
+type Pattern = RegExp | { re: RegExp; exempt: (sentence: string, text: string) => boolean };
+
+const IGNITER = /\b(?:ignit\w*|stove|burner|cooktop|range|grill|spark plugs?|lighter)\b/i;
+const ELEC_NOUN = new RegExp(`\\b${ELEC}\\b`, "i");
+// Signs a CO alarm is reporting CO, not a low battery.
+const CO_DANGER =
+  /\b(?:going off|goes off|went off|sounding|alarming|non-?stop|\d+\s*ppm|ppm|reads?\s+\d+|headaches?|dizz\w*|nause\w*|vomit\w*|light-?headed|drows\w*|feel(?:s|ing)?\s+sick)\b/i;
+
+const RULES: { hazard: EscalatingHazard; patterns: Pattern[] }[] = [
   {
     hazard: "gas",
     patterns: [
@@ -44,24 +59,26 @@ const RULES: { hazard: EscalatingHazard; patterns: RegExp[]; unless?: RegExp }[]
   },
   {
     hazard: "carbon_monoxide",
-    patterns: [
-      /\bcarbon monoxide\b/i,
-      /\bco\s+(?:alarm|detector|monitor|reading)s?\b/i,
-    ],
-    // A chirp is almost always a low battery / end-of-life signal, not CO.
-    unless: /\bchirp/i,
+    // A chirp is almost always a low battery / end-of-life signal, not CO,
+    // unless the alarm is actually sounding or someone has symptoms.
+    patterns: [/\bcarbon monoxide\b/i, /\bco\s+(?:alarm|detector|monitor|reading)s?\b/i].map((re) => ({
+      re,
+      exempt: (sentence: string, text: string) => /\bchirp/i.test(sentence) && !CO_DANGER.test(text),
+    })),
   },
   {
     hazard: "electrical",
     patterns: [
-      /\bspark(?:s|ed|ing)?\b(?!\s*plugs?)/i,
+      // Stove and grill igniters spark by design, but not an outlet near one.
+      {
+        re: /\bspark(?:s|ed|ing)?\b(?!\s*plugs?)/i,
+        exempt: (sentence) => IGNITER.test(sentence) && !ELEC_NOUN.test(sentence),
+      },
       /\barc(?:ing|ed)\b/i,
       /\b(?:got|get|getting)\s+(?:a\s+)?shock(?:ed)?\b|\bshocked me\b/i,
       both(String.raw`(?:burning|burnt|scorch\w*|melt\w*|smok\w*)`, ELEC, 30),
       both(ELEC, String.raw`(?:hot to the touch|too hot to touch)`, 20),
     ],
-    // Stove/grill igniters spark by design.
-    unless: /\b(?:ignit\w*|stove|burner|cooktop|range|grill|spark plugs?|lighter)\b/i,
   },
   {
     hazard: "water_near_electrical",
@@ -73,14 +90,19 @@ const RULES: { hazard: EscalatingHazard; patterns: RegExp[]; unless?: RegExp }[]
   },
 ];
 
+function sentencesOf(text: string) {
+  return text.split(/[.!?\n]+/).filter((s) => s.trim());
+}
+
+function matches(pattern: Pattern, sentences: string[], text: string) {
+  if (pattern instanceof RegExp) return sentences.some((s) => pattern.test(s));
+  return sentences.some((s) => pattern.re.test(s) && !pattern.exempt(s, text));
+}
+
 export function detectTextHazards(text: string): EscalatingHazard[] {
   if (!text.trim()) return [];
-  const found: EscalatingHazard[] = [];
-  for (const rule of RULES) {
-    if (rule.unless?.test(text)) continue;
-    if (rule.patterns.some((p) => p.test(text))) found.push(rule.hazard);
-  }
-  return found;
+  const sentences = sentencesOf(text);
+  return RULES.filter((rule) => rule.patterns.some((p) => matches(p, sentences, text))).map((rule) => rule.hazard);
 }
 
 export const EMERGENCY_STEPS: Record<EscalatingHazard, string[]> = {

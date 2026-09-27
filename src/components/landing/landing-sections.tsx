@@ -4,6 +4,9 @@ import { ArrowRight, Camera, ClipboardCheck, MessageSquareText, Plus } from "luc
 import { GUIDES } from "@/lib/guides";
 import { LANDING_FAQS } from "@/lib/seo";
 
+/** Two rows on desktop. The first guides in the list are a mix of trades; "All guides" has the rest. */
+const TEASER_GUIDES = 6;
+
 /**
  * Landing sections that live inside HouseCallTemplate, so they use its theme
  * variables (--ink, --muted, --line, --accent, --accent-soft, --grad).
@@ -68,13 +71,13 @@ export function GuidesTeaser() {
         </h2>
         <Link
           href="/guides"
-          className="group inline-flex items-center gap-1 font-semibold text-(--accent) transition-colors hover:text-(--ink)"
+          className="tap-area group inline-flex items-center gap-1 font-semibold text-(--accent) transition-colors hover:text-(--ink)"
         >
           All guides <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
       <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {GUIDES.map((g) => (
+        {GUIDES.slice(0, TEASER_GUIDES).map((g) => (
           <li key={g.slug} className="t-reveal">
             <Link
               href={`/guides/${g.slug}`}

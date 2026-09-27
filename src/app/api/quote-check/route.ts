@@ -5,7 +5,7 @@ import { modelOptions } from "@/lib/ai/client";
 import { logColumns } from "@/lib/ai/log-columns";
 import { runQuoteCheck } from "@/lib/ai/quote-check";
 import { QUOTE_PROMPT_VERSION } from "@/lib/ai/quote-prompt";
-import { DENY_RESPONSES, checkAllowance } from "@/lib/allowance";
+import { DENY_RESPONSES, reserveRun } from "@/lib/allowance";
 import { env } from "@/lib/env";
 import { loadImages } from "@/lib/images";
 import { pathBelongsTo } from "@/lib/storage-paths";
@@ -37,36 +37,33 @@ export async function POST(request: Request) {
   }
 
   const ipHash = viewer.userId ? null : await getIpHash();
-  const allowance = await checkAllowance("quote", viewer, ipHash);
+  // Counts and reserves the pending row atomically; we fill in the rest below.
+  const allowance = await reserveRun("quote", viewer, ipHash);
   if (!allowance.allowed) {
     const deny = DENY_RESPONSES.quote[allowance.reason];
     return errorResponse(deny.status, allowance.reason, deny.message);
   }
 
   const admin = createAdminClient();
-  const { data: row, error: insertError } = await admin
+  const row = { id: allowance.id };
+  const { error: fillError } = await admin
     .from("quote_checks")
-    .insert({
-      user_id: viewer.userId,
-      anon_id: viewer.anonId,
-      ip_hash: ipHash,
+    .update({
       description: description.trim() || null,
       image_paths: imagePaths,
-      status: "pending",
       model: env.aiMock ? "mock" : env.anthropicModel,
       prompt_version: QUOTE_PROMPT_VERSION,
       utm: viewer.userId ? null : await getAttribution(),
     })
-    .select("id")
-    .single();
-  if (insertError || !row) {
-    console.error("quote check insert failed", insertError);
-    return errorResponse(500, "server_error", FRIENDLY_FAILURE);
-  }
-
+    .eq("id", row.id);
   const fail = async (error: string, extra: Record<string, unknown> = {}) => {
     await admin.from("quote_checks").update({ status: "failed", error, ...extra }).eq("id", row.id);
   };
+  if (fillError) {
+    console.error("quote check save failed", fillError);
+    await fail(fillError.message);
+    return errorResponse(500, "server_error", FRIENDLY_FAILURE);
+  }
 
   let images;
   try {

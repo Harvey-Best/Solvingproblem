@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowUp, CornerDownRight, MessageCircle, RefreshCcw, X } from "lucide-react";
+import { ArrowUp, CornerDownRight, Loader2, MessageCircle, RefreshCcw, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,11 +13,13 @@ import type { ThreadExchange } from "@/lib/thread";
 import { cn } from "@/lib/utils";
 
 const MAX_LENGTH = 1000;
+/** Matches the follow-up route's limit for the suggested question being answered. */
+const MAX_REPLY_TO = 500;
 
 function UserBubble({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex justify-end">
-      <p className="max-w-[85%] whitespace-pre-line rounded-2xl rounded-br-md bg-(image:--grad) px-4 py-2.5 text-[15px] leading-relaxed text-white">
+      <p className="max-w-[85%] whitespace-pre-line break-words rounded-2xl rounded-br-md bg-(image:--grad) px-4 py-2.5 text-[15px] leading-relaxed text-white">
         {children}
       </p>
     </div>
@@ -29,7 +31,7 @@ function ReplyBubble({ children, muted = false }: { children: React.ReactNode; m
     <div className="flex justify-start">
       <div
         className={cn(
-          "max-w-[85%] rounded-2xl rounded-bl-md border px-4 py-2.5 text-[15px] leading-relaxed",
+          "max-w-[85%] break-words rounded-2xl rounded-bl-md border px-4 py-2.5 text-[15px] leading-relaxed",
           muted ? "bg-muted text-muted-foreground" : "bg-card"
         )}
       >
@@ -66,6 +68,7 @@ export function FollowUpThread({
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<{ message: string; signup?: boolean; plans?: boolean } | null>(null);
   const [isRefreshing, startTransition] = useTransition();
+  const input = useRef<HTMLTextAreaElement>(null);
 
   const sending = pending !== null || isRefreshing;
   const outOfTurns = remaining <= 0;
@@ -80,7 +83,8 @@ export function FollowUpThread({
       const res = await fetch(`/api/diagnose/${diagnosisId}/followup`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ message }),
+        // The question goes separately, so the answer alone gets the full length limit.
+        body: JSON.stringify({ message: answer, ...(replyTo ? { replyTo: replyTo.slice(0, MAX_REPLY_TO) } : {}) }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
@@ -130,7 +134,7 @@ export function FollowUpThread({
                 {reply?.result_json ? (
                   <ReplyBubble>
                     <p>{reply.content || "I've updated the diagnosis."}</p>
-                    <a href="#top" className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
+                    <a href="#top" className="tap-area mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary">
                       <CornerDownRight className="size-3" /> Diagnosis updated above
                     </a>
                   </ReplyBubble>
@@ -144,7 +148,7 @@ export function FollowUpThread({
                 <UserBubble>{pending}</UserBubble>
                 <ReplyBubble muted>
                   <span className="flex items-center gap-2">
-                    <RefreshCcw className="size-4 animate-spin" /> Re-checking with your answer… (20–40s)
+                    <RefreshCcw className="size-4 shrink-0 animate-spin" /> Re-checking with your answer… (20–40s)
                   </span>
                 </ReplyBubble>
               </>
@@ -183,8 +187,12 @@ export function FollowUpThread({
                       key={s}
                       type="button"
                       disabled={sending}
-                      onClick={() => setReplyTo(s)}
-                      className="rounded-xl border bg-card px-3.5 py-2.5 text-left text-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 active:scale-[0.99] disabled:opacity-50"
+                      onClick={() => {
+                        setReplyTo(s);
+                        // Straight to the answer box (opens the keyboard on phones).
+                        input.current?.focus();
+                      }}
+                      className="min-h-11 break-words rounded-xl border bg-card px-3.5 py-2.5 text-left text-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 active:scale-[0.99] disabled:opacity-50"
                     >
                       {s}
                     </button>
@@ -196,16 +204,23 @@ export function FollowUpThread({
             <div className="space-y-2">
               {replyTo && (
                 <div className="flex items-start justify-between gap-2 rounded-xl bg-secondary px-3 py-2 text-sm text-secondary-foreground">
-                  <span>
+                  <span className="min-w-0 break-words">
                     <span className="font-semibold">Answering:</span> {replyTo}
                   </span>
-                  <button type="button" onClick={() => setReplyTo(null)} aria-label="Cancel answering this question">
+                  <button
+                    type="button"
+                    onClick={() => setReplyTo(null)}
+                    disabled={sending}
+                    aria-label="Cancel answering this question"
+                    className="tap-area -mr-1 shrink-0 rounded-full p-1 transition-colors hover:bg-primary/10 disabled:opacity-50"
+                  >
                     <X className="size-4" />
                   </button>
                 </div>
               )}
               <div className="flex items-end gap-2">
                 <Textarea
+                  ref={input}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   maxLength={MAX_LENGTH}
@@ -220,10 +235,10 @@ export function FollowUpThread({
                   size="icon"
                   onClick={send}
                   disabled={!text.trim() || sending}
-                  aria-label="Send"
+                  aria-label={sending ? "Sending" : "Send"}
                   className="size-12 shrink-0"
                 >
-                  <ArrowUp className="size-5" />
+                  {sending ? <Loader2 className="size-5 animate-spin" /> : <ArrowUp className="size-5" />}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">

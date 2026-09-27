@@ -4,14 +4,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 const db = vi.hoisted(() => ({
-  insert: vi.fn(),
+  rpc: vi.fn(),
   deleteEq: vi.fn(),
+  updateEq: vi.fn(),
+  update: vi.fn(),
 }));
 vi.mock("@/lib/supabase/admin", () => ({
   createAdminClient: () => ({
+    rpc: db.rpc,
     from: () => ({
-      insert: db.insert,
       delete: () => ({ eq: db.deleteEq }),
+      update: (values: unknown) => {
+        db.update(values);
+        return { eq: db.updateEq };
+      },
     }),
   }),
 }));
@@ -44,8 +50,9 @@ beforeEach(() => {
   vi.stubEnv("STRIPE_PRICE_MONTHLY", "price_m");
   vi.stubEnv("STRIPE_PRICE_YEARLY", "price_y");
   vi.stubEnv("STRIPE_WEBHOOK_SECRET", SECRET);
-  db.insert.mockResolvedValue({ error: null });
+  db.rpc.mockResolvedValue({ data: "claimed", error: null });
   db.deleteEq.mockResolvedValue({ error: null });
+  db.updateEq.mockResolvedValue({ error: null });
   handler.mockResolvedValue(undefined);
 });
 
@@ -58,22 +65,31 @@ describe("Stripe webhook", () => {
   it("rejects a bad signature without touching the database", async () => {
     const res = await POST(signedRequest(EVENT, "whsec_wrong"));
     expect(res.status).toBe(400);
-    expect(db.insert).not.toHaveBeenCalled();
+    expect(db.rpc).not.toHaveBeenCalled();
     expect(handler).not.toHaveBeenCalled();
   });
 
-  it("records the event, then handles it", async () => {
+  it("claims the event, handles it, then marks it processed", async () => {
     const res = await POST(signedRequest(EVENT));
     expect(res.status).toBe(200);
-    expect(db.insert).toHaveBeenCalledWith({ id: "evt_1", type: "invoice.paid" });
+    expect(db.rpc).toHaveBeenCalledWith("claim_stripe_event", expect.objectContaining({ p_id: "evt_1", p_type: "invoice.paid" }));
     expect(handler).toHaveBeenCalledWith(expect.objectContaining({ id: "evt_1", type: "invoice.paid" }));
+    expect(db.update).toHaveBeenCalledWith({ processed_at: expect.any(String) });
+    expect(db.updateEq).toHaveBeenCalledWith("id", "evt_1");
   });
 
   it("acknowledges a redelivered event without handling it twice", async () => {
-    db.insert.mockResolvedValue({ error: { code: "23505", message: "duplicate key" } });
+    db.rpc.mockResolvedValue({ data: "processed", error: null });
     const res = await POST(signedRequest(EVENT));
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ duplicate: true });
+    expect(handler).not.toHaveBeenCalled();
+  });
+
+  it("asks Stripe to retry later while another delivery is still handling it", async () => {
+    db.rpc.mockResolvedValue({ data: "in_progress", error: null });
+    const res = await POST(signedRequest(EVENT));
+    expect(res.status).toBe(409);
     expect(handler).not.toHaveBeenCalled();
   });
 

@@ -23,22 +23,22 @@ export function DiagnosingOverlay({ messages = DIAGNOSIS_MESSAGES }: { messages?
     <div
       role="status"
       aria-live="polite"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-background/95 px-6 text-center backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 bg-background/95 px-6 pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-center backdrop-blur-sm"
     >
       <div className="relative grid size-24 place-items-center">
-        <span className="absolute inset-0 animate-ping rounded-full bg-(--glow-a)/40" />
+        <span className="absolute inset-0 animate-ping rounded-full bg-(--glow-a)/40 motion-reduce:animate-none" />
         <span className="absolute inset-2 rounded-full bg-(image:--grad) shadow-[0_12px_30px_-10px_var(--primary)]" />
         <Stethoscope className="relative size-10 text-white" />
       </div>
       <div className="space-y-2">
-        <p key={index} className="animate-in fade-in slide-in-from-bottom-1 font-display text-2xl font-semibold duration-500">
+        <p key={index} className="animate-in fade-in slide-in-from-bottom-1 text-balance font-display text-2xl font-semibold duration-500 motion-reduce:animate-none">
           {messages[index]}
         </p>
         <p className="text-sm text-muted-foreground">This usually takes 20–40 seconds. Keep this screen open.</p>
       </div>
       <div className="h-1.5 w-56 overflow-hidden rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-(image:--grad) transition-[width] duration-[5000ms] ease-linear"
+          className="h-full rounded-full bg-(image:--grad) transition-[width] duration-[5000ms] ease-linear motion-reduce:transition-none"
           style={{ width: `${Math.min(95, ((index + 1) / messages.length) * 95)}%` }}
         />
       </div>

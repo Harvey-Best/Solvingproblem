@@ -30,8 +30,8 @@ export type Allowance =
   | { allowed: false; reason: DenyReason; access?: Access };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-// In-flight requests count too, so two fast taps can't both use the free one.
-const PENDING_WINDOW_MS = 3 * 60 * 1000;
+// In-flight runs count too. Runs can take up to maxDuration (300s), plus slack.
+const PENDING_WINDOW_MS = 6 * 60 * 1000;
 
 type Filter = { userId?: string; anonId?: string; ipHash?: string; since?: string };
 
@@ -79,6 +79,39 @@ export async function checkAllowance(kind: RunKind, viewer: Viewer, ipHash: stri
   }
 
   return { allowed: true };
+}
+
+/**
+ * Checks the allowance and, if allowed, inserts the run's pending row in the
+ * same database transaction (see reserve_run), so parallel requests can't all
+ * slip under the limit. checkAllowance is the read-only version for pages.
+ */
+export async function reserveRun(
+  kind: RunKind,
+  viewer: Viewer,
+  ipHash: string | null
+): Promise<({ allowed: true; id: string } | { allowed: false; reason: DenyReason }) & { access?: Access }> {
+  let access: Access | undefined;
+  if (viewer.userId) {
+    access = await getAccess(viewer.userId);
+    if (!accessAllowsPaidFeatures(access)) return { allowed: false, reason: "subscription_required", access };
+  }
+
+  const { data, error } = await createAdminClient().rpc("reserve_run", {
+    p_kind: kind,
+    p_user_id: viewer.userId,
+    p_anon_id: viewer.userId ? null : viewer.anonId,
+    p_ip_hash: viewer.userId ? null : ipHash,
+    p_user_per_day: USER_PER_DAY,
+    p_anon_free: ANON_FREE_PER_KIND,
+    p_ip_per_day: ANON_PER_IP_PER_DAY,
+    p_pending_seconds: PENDING_WINDOW_MS / 1000,
+  });
+  if (error) throw error;
+  const result = data as { id?: string; denied?: DenyReason };
+  if (result.denied) return { allowed: false, reason: result.denied, access };
+  if (!result.id) throw new Error("reserve_run returned no id");
+  return { allowed: true, id: result.id, access };
 }
 
 /** API error for a denied run. 402 tells the client to send the viewer to the plans. */

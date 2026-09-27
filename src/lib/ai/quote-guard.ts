@@ -3,8 +3,9 @@ import type { PriceAssessment, QuoteCheck } from "@/lib/ai/quote-schema";
 /**
  * Deterministic checks on top of the model, so the rules the product promises
  * hold no matter what the model wrote:
- *  - a deposit over 30% is always flagged,
- *  - a missing license number is always flagged,
+ *  - a deposit over 30% is always flagged, using the higher of the printed
+ *    percent and deposit / total,
+ *  - a missing license number is always flagged ("N/A" counts as missing),
  *  - the typical range is always a real range (never one number),
  *  - the above/within/below label always agrees with the numbers shown.
  * Returns which rules fired so they can be logged for review.
@@ -44,27 +45,33 @@ export function normalizeQuoteCheck(input: QuoteCheck): { quote: QuoteCheck; fla
   q.typical_range.low = low;
   q.typical_range.high = high;
 
-  // Deposit percent: compute it when the model gave amounts but no percent.
+  // Deposit percent: the quote is the contractor's own document, so a printed
+  // percent is only trusted when the amounts don't say it's higher.
   const total = q.quote_total && q.quote_total > 0 ? q.quote_total : null;
-  if (q.deposit_percent == null && q.deposit_amount != null && total) {
-    q.deposit_percent = Math.round((q.deposit_amount / total) * 100);
+  if (q.deposit_amount != null && q.deposit_amount > 0 && total) {
+    const computed = Math.round((q.deposit_amount / total) * 100);
+    q.deposit_percent = Math.max(q.deposit_percent ?? 0, computed);
   }
-  const hasFlag = (re: RegExp) => q.red_flags.some((f) => re.test(`${f.flag} ${f.explanation}`));
-  if (q.deposit_percent != null && q.deposit_percent > DEPOSIT_GUIDELINE_PERCENT && !hasFlag(/deposit|up ?front|down payment/i)) {
+  // Our flag replaces any the model raised on the same topic (matched on the
+  // label only, so an unrelated flag that mentions "up front" can't hide it).
+  const withoutModelFlags = (re: RegExp) => q.red_flags.filter((f) => !re.test(f.flag));
+  if (q.deposit_percent != null && q.deposit_percent > DEPOSIT_GUIDELINE_PERCENT) {
     q.red_flags = [
       {
         flag: `Deposit over ${DEPOSIT_GUIDELINE_PERCENT}%`,
         severity: q.deposit_percent > 50 ? "serious" : "caution",
         explanation: `This quote asks for about ${Math.round(q.deposit_percent)}% up front. A common guideline is ${DEPOSIT_GUIDELINE_PERCENT}% or less (some states cap it). Ask to tie payments to finished milestones.`,
       },
-      ...q.red_flags,
+      ...withoutModelFlags(/deposit|down payment/i),
     ];
     flags.push("deposit_over_30");
   }
 
-  if (!q.contractor.license_number.trim() && q.readability !== "unreadable" && !hasFlag(/licen[cs]e/i)) {
+  // "N/A", "pending" or "licensed & insured" aren't license numbers.
+  const hasLicenseNumber = /\d{3,}/.test(q.contractor.license_number);
+  if (!hasLicenseNumber && q.readability !== "unreadable") {
     q.red_flags = [
-      ...q.red_flags,
+      ...withoutModelFlags(/licen[cs]e/i),
       {
         flag: "No license number on the quote",
         severity: "caution",

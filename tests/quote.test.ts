@@ -34,6 +34,30 @@ describe("normalizeQuoteCheck", () => {
     expect(quote.red_flags.filter((f) => /deposit/i.test(f.flag))).toHaveLength(1);
   });
 
+  it("uses deposit / total when the printed percent understates it", () => {
+    const { quote, flags } = normalizeQuoteCheck({ ...withLicense, deposit_amount: 6000, deposit_percent: 30, quote_total: 10000 });
+    expect(quote.deposit_percent).toBe(60);
+    expect(flags).toContain("deposit_over_30");
+  });
+
+  it("isn't hidden by an unrelated model flag that mentions paying up front", () => {
+    const { quote, flags } = normalizeQuoteCheck({
+      ...withLicense,
+      deposit_amount: 6000,
+      quote_total: 10000,
+      red_flags: [{ flag: "Cash only", severity: "caution", explanation: "They want cash up front for materials." }],
+    });
+    expect(flags).toContain("deposit_over_30");
+    expect(quote.red_flags.map((f) => f.flag)).toEqual(["Deposit over 30%", "Cash only"]);
+  });
+
+  it("treats placeholder license text as missing", () => {
+    for (const license_number of ["N/A", "pending", "Licensed & insured"]) {
+      const { flags } = normalizeQuoteCheck({ ...withLicense, contractor: { ...withLicense.contractor, license_number } });
+      expect(flags, license_number).toContain("no_license");
+    }
+  });
+
   it("flags a missing license number unless the quote is unreadable", () => {
     expect(normalizeQuoteCheck(MOCK_QUOTE).flags).toContain("no_license");
     expect(normalizeQuoteCheck({ ...MOCK_QUOTE, readability: "unreadable" }).flags).not.toContain("no_license");

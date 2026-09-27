@@ -93,7 +93,7 @@ export function QuoteCheckResult({ quote: q, imageUrls }: { quote: QuoteCheck; i
           {imageUrls.map((url, i) => (
             <a key={i} href={url} target="_blank" rel="noreferrer" className="block">
               {/* eslint-disable-next-line @next/next/no-img-element -- short-lived signed URL */}
-              <img src={url} alt={`Quote page ${i + 1}`} className="size-20 rounded-xl border object-cover" />
+              <img src={url} alt={`Quote page ${i + 1}`} width={80} height={80} className="size-20 rounded-xl border bg-muted object-cover" />
             </a>
           ))}
         </div>
@@ -108,7 +108,7 @@ export function QuoteCheckResult({ quote: q, imageUrls }: { quote: QuoteCheck; i
             {READABILITY_LABEL[q.readability]}
           </Badge>
         </div>
-        <h1 className="text-balance font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight">{q.title}</h1>
+        <h1 className="text-balance break-words font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight">{q.title}</h1>
         <p className="text-muted-foreground">{q.job_summary}</p>
       </div>
 
@@ -215,7 +215,7 @@ export function QuoteCheckResult({ quote: q, imageUrls }: { quote: QuoteCheck; i
             <ul className="divide-y rounded-xl border">
               {q.line_items.map((item, i) => (
                 <li key={i} className="flex items-start justify-between gap-3 p-3 text-sm">
-                  <div>
+                  <div className="min-w-0 break-words">
                     <p className="font-medium">{item.description}</p>
                     {item.note && <p className="text-muted-foreground">{item.note}</p>}
                   </div>
@@ -249,13 +249,13 @@ export function QuoteCheckResult({ quote: q, imageUrls }: { quote: QuoteCheck; i
         <CardContent>
           <dl className="grid grid-cols-[7rem_1fr] gap-x-3 gap-y-2 text-sm">
             <dt className="text-muted-foreground">Business</dt>
-            <dd>{q.contractor.name || "Not on the quote"}</dd>
+            <dd className="min-w-0 break-words">{q.contractor.name || "Not on the quote"}</dd>
             <dt className="text-muted-foreground">License #</dt>
-            <dd className={cn(!q.contractor.license_number && "text-amber-700")}>
+            <dd className={cn("min-w-0 break-words", !q.contractor.license_number && "text-amber-700")}>
               {q.contractor.license_number || "Not on the quote"}
             </dd>
             <dt className="text-muted-foreground">Contact</dt>
-            <dd>{q.contractor.phone_or_email || "Not on the quote"}</dd>
+            <dd className="min-w-0 break-words">{q.contractor.phone_or_email || "Not on the quote"}</dd>
           </dl>
         </CardContent>
       </Card>

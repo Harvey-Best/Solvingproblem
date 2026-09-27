@@ -5,6 +5,7 @@ import { AlertTriangle, History, LogOut } from "lucide-react";
 
 import { signOut } from "@/app/(site)/login/actions";
 import { AccountPlan } from "@/components/billing/account-plan";
+import { PendingButton } from "@/components/billing/pending-button";
 import { Button } from "@/components/ui/button";
 import { getAccess } from "@/lib/billing";
 import { getViewer } from "@/lib/viewer";
@@ -43,9 +44,9 @@ export default async function AccountPage(props: PageProps<"/account">) {
           </Link>
         </Button>
         <form action={signOut}>
-          <Button type="submit" variant="ghost">
+          <PendingButton variant="ghost" pendingLabel="Signing out…">
             <LogOut className="size-4" /> Sign out
-          </Button>
+          </PendingButton>
         </form>
       </div>
     </main>

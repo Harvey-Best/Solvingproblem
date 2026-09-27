@@ -60,6 +60,36 @@ describe("resolveAccess", () => {
     expect(canceled.kind === "expired" && canceled.endedAt?.toISOString()).toBe("2026-09-25T00:00:00.000Z");
   });
 
+  it("keeps past_due access only for the grace period after the failed renewal", () => {
+    // Monthly period 2026-09-20 -> 2026-10-20: the renewal failed on 2026-09-20.
+    const pastDue = sub({ status: "past_due" });
+    const within = resolveAccess({ subscriptions: [pastDue], trialEndsAt: null, now: new Date("2026-10-03T00:00:00Z") });
+    expect(within.kind).toBe("subscribed");
+    const after = resolveAccess({ subscriptions: [pastDue], trialEndsAt: null, now: new Date("2026-10-05T00:00:00Z") });
+    expect(after.kind).toBe("expired");
+    // Yearly: the grace counts from a year before the period end.
+    const yearly = sub({ status: "past_due", plan_interval: "year", current_period_end: "2027-09-20T00:00:00Z" });
+    expect(resolveAccess({ subscriptions: [yearly], trialEndsAt: null, now: new Date("2026-09-30T00:00:00Z") }).kind).toBe("subscribed");
+    expect(resolveAccess({ subscriptions: [yearly], trialEndsAt: null, now: new Date("2026-10-10T00:00:00Z") }).kind).toBe("expired");
+  });
+
+  it("says a cancel-at-period-end subscription ended at the period end, not when cancel was clicked", () => {
+    const access = resolveAccess({
+      subscriptions: [
+        sub({
+          status: "canceled",
+          cancel_at_period_end: true,
+          cancel_at: "2026-09-30T00:00:00Z",
+          canceled_at: "2026-09-05T00:00:00Z",
+          current_period_end: "2026-09-30T00:00:00Z",
+        }),
+      ],
+      trialEndsAt: null,
+      now: NOW,
+    });
+    expect(access.kind === "expired" && access.endedAt?.toISOString()).toBe("2026-09-30T00:00:00.000Z");
+  });
+
   it("never treats incomplete or unpaid subscriptions as access", () => {
     for (const status of ["incomplete", "incomplete_expired", "unpaid", "paused", "canceled"]) {
       const access = resolveAccess({ subscriptions: [sub({ status })], trialEndsAt: null, now: NOW });
@@ -119,6 +149,11 @@ describe("email templates", () => {
     expect(inTwoDays.text).toContain("nothing is charged unless you subscribe");
     const tomorrow = trialEndingEmail({ trialEndsAt: new Date(NOW.getTime() + 20 * HOUR), siteUrl, now: NOW });
     expect(tomorrow.subject).toBe("Your Home Doctor trial ends tomorrow");
+    // Monday noon ET run, trial ending Tuesday 11pm ET (35h away): that's tomorrow, not "in 2 days".
+    const monday = new Date("2026-10-05T16:00:00Z");
+    const tuesdayNight = trialEndingEmail({ trialEndsAt: new Date("2026-10-07T03:00:00Z"), siteUrl, now: monday });
+    expect(tuesdayNight.subject).toBe("Your Home Doctor trial ends tomorrow");
+    expect(tuesdayNight.html).toContain("Tuesday, October 6");
   });
 
   it("receipt: amount, plan, invoice link and renewal", () => {

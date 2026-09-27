@@ -233,11 +233,11 @@ export function HouseCallTemplate({
   });
 
   return (
-    <div style={vars} className="min-h-screen overflow-x-clip bg-(--bg) text-(--ink) selection:bg-(--accent-soft)">
+    <div style={vars} className="min-h-screen overflow-x-clip bg-(--bg) pt-[env(safe-area-inset-top)] text-(--ink) selection:bg-(--accent-soft)">
       <div className={cn(g && "relative isolate")}>
         {g && <Glow g={g} />}
         <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 sm:py-5">
-          <Link href={homeHref ?? `/templates/${t.slug}`} className="flex items-center gap-2.5" aria-label="Home Doctor home">
+          <Link href={homeHref ?? `/templates/${t.slug}`} className="flex min-h-11 shrink-0 items-center gap-2.5 rounded-xl" aria-label="Home Doctor home">
             <span
               className={cn(
                 "grid size-8 place-items-center rounded-[10px] text-white",
@@ -248,7 +248,9 @@ export function HouseCallTemplate({
                 <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" />
               </svg>
             </span>
-            <span className="font-display text-[22px] font-semibold tracking-tight">Home Doctor</span>
+            <span className="whitespace-nowrap font-display text-[22px] font-semibold tracking-tight max-[359px]:sr-only">
+              Home Doctor
+            </span>
           </Link>
           {nav ?? (
             <Link href="/login" className="rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-(--accent-soft)">
@@ -472,10 +474,10 @@ export function HouseCallTemplate({
           >
             {footerLinks && (
               <nav aria-label="Footer" className="pb-3">
-                <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm font-medium text-(--ink)">
+                <ul className="-my-2 flex flex-wrap gap-x-6 text-sm font-medium text-(--ink)">
                   {footerLinks.map((l) => (
                     <li key={l.href}>
-                      <Link href={l.href} className="transition-colors hover:text-(--accent)">
+                      <Link href={l.href} className="inline-flex min-h-11 items-center transition-colors hover:text-(--accent)">
                         {l.label}
                       </Link>
                     </li>

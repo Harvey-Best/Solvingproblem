@@ -9,7 +9,8 @@ export function ModeTabs({ active }: { active: "diagnose" | "quote" }) {
       href={href}
       aria-current={active === key ? "page" : undefined}
       className={cn(
-        "rounded-full px-3 py-2 text-center transition-all duration-200",
+        // 44px tall, and small enough on phones that "Diagnose a problem" stays on one line at 360px.
+        "flex min-h-11 items-center justify-center whitespace-nowrap rounded-full px-2 text-center text-[13px] transition-all duration-200 sm:px-3 sm:text-sm",
         active === key
           ? "bg-(image:--grad) text-primary-foreground shadow-[0_8px_18px_-12px_var(--primary)]"
           : "text-muted-foreground hover:text-foreground"
@@ -19,7 +20,7 @@ export function ModeTabs({ active }: { active: "diagnose" | "quote" }) {
     </Link>
   );
   return (
-    <nav aria-label="Mode" className="grid grid-cols-2 gap-1 rounded-full border bg-card p-1 text-sm font-semibold">
+    <nav aria-label="Mode" className="grid grid-cols-2 gap-1 rounded-full border bg-card p-1 font-semibold">
       {tab("diagnose", "/diagnose", "Diagnose a problem")}
       {tab("quote", "/quote", "Check a quote")}
     </nav>

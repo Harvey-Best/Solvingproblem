@@ -38,7 +38,9 @@ export const env = {
   get aiMock() {
     return process.env.AI_MOCK === "1";
   },
+  /** Required on Vercel: with a public fallback, stored IP hashes could be reversed. */
   get anonIdSalt() {
+    if (process.env.VERCEL) return required("ANON_ID_SALT");
     return process.env.ANON_ID_SALT || "home-doctor-dev-salt";
   },
   get stripeSecretKey() {

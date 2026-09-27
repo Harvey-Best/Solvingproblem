@@ -71,7 +71,7 @@ export function DiagnoseForm({ initialCategory }: { initialCategory?: CategoryId
   }
 
   return (
-    <div className="space-y-8 pb-28">
+    <div className="space-y-8">
       {submitting && <DiagnosingOverlay />}
 
       <section className="space-y-3">
@@ -112,7 +112,7 @@ export function DiagnoseForm({ initialCategory }: { initialCategory?: CategoryId
                 aria-pressed={selected}
                 onClick={() => setCategory(selected ? null : c.id)}
                 className={cn(
-                  "rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 active:scale-95",
+                  "inline-flex min-h-11 items-center rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 active:scale-95",
                   selected
                     ? "border-transparent bg-(image:--grad) text-primary-foreground shadow-[0_8px_18px_-12px_var(--primary)]"
                     : "bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
@@ -129,17 +129,23 @@ export function DiagnoseForm({ initialCategory }: { initialCategory?: CategoryId
       </section>
 
       {error && (
-        <div className="flex gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+        <div role="alert" className="flex gap-2 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
           <AlertCircle className="mt-0.5 size-4 shrink-0" /> {error}
         </div>
       )}
 
       <SubmitBar>
-        <Button size="xl" className="w-full" onClick={submit} disabled={!canSubmit}>
-          {busy ? (
+        <Button size="xl" className="w-full" onClick={submit} disabled={!canSubmit} aria-busy={submitting || busy}>
+          {submitting ? (
+            <>
+              <Loader2 className="animate-spin" /> Diagnosing…
+            </>
+          ) : busy ? (
             <>
               <Loader2 className="animate-spin" /> Uploading photos…
             </>
+          ) : hasErrors ? (
+            "Retry or remove the failed photo"
           ) : readyPaths.length === 0 ? (
             "Add a photo to start"
           ) : (

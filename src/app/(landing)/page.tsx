@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { IdentifyViewer } from "@/components/analytics/identify-viewer";
 import { JsonLd } from "@/components/json-ld";
 import { HouseCallTemplate } from "@/components/landing/house-call";
 import { Faq, GuidesTeaser, HowItWorks } from "@/components/landing/landing-sections";
@@ -25,15 +26,17 @@ export const metadata = pageMetadata({
   absoluteTitle: true,
 });
 
+// 44px tall on phones, with tight padding so the logo and two links fit on one row at 360px.
 const navLink =
-  "cursor-pointer rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-(--accent-soft)";
+  "inline-flex h-11 cursor-pointer items-center rounded-full px-3 text-sm font-medium transition-colors hover:bg-(--accent-soft) sm:h-9 sm:px-4";
 
 async function LandingNav() {
   const { userId } = await getViewer();
   return (
     <nav aria-label="Main" className="flex items-center gap-1">
+      <IdentifyViewer userId={userId} />
       {/* Phones get the guides from the page body instead; the header stays one row. */}
-      <Link href="/guides" className={`${navLink} hidden sm:inline-block`}>
+      <Link href="/guides" className={`${navLink} max-sm:hidden`}>
         Guides
       </Link>
       {userId ? (
@@ -47,7 +50,7 @@ async function LandingNav() {
         </>
       ) : (
         <>
-          <Link href="/pricing" className={`${navLink} hidden sm:inline-block`}>
+          <Link href="/pricing" className={`${navLink} max-sm:hidden`}>
             Pricing
           </Link>
           <Link href="/login" className={navLink}>
