@@ -5,6 +5,7 @@ import { modelOptions } from "@/lib/ai/client";
 import { runDiagnosis } from "@/lib/ai/diagnose";
 import { logColumns } from "@/lib/ai/log-columns";
 import { FOLLOW_UPS_PER_DIAGNOSIS } from "@/lib/allowance";
+import { accessAllowsPaidFeatures, getAccess } from "@/lib/billing";
 import { getDiagnosisForViewer, getThread } from "@/lib/diagnoses";
 import { loadImages } from "@/lib/images";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -35,6 +36,10 @@ export async function POST(request: Request, ctx: RouteContext<"/api/diagnose/[i
   if (!record) return errorResponse(404, "not_found", "We can't find that diagnosis.");
   if (record.status !== "complete" || !record.result_json) {
     return errorResponse(409, "not_ready", "This diagnosis didn't finish, so there's nothing to update.");
+  }
+
+  if (viewer.userId && !accessAllowsPaidFeatures(await getAccess(viewer.userId))) {
+    return errorResponse(402, "subscription_required", "Your free trial has ended. Choose a plan to keep asking.");
   }
 
   const turns = successfulTurns(toExchanges(await getThread(id)));

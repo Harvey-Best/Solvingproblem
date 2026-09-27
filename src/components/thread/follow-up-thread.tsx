@@ -50,18 +50,21 @@ export function FollowUpThread({
   suggestions,
   remaining,
   signedIn,
+  locked = false,
 }: {
   diagnosisId: string;
   exchanges: ThreadExchange[];
   suggestions: string[];
   remaining: number;
   signedIn: boolean;
+  /** The viewer's trial or subscription has ended. */
+  locked?: boolean;
 }) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
-  const [error, setError] = useState<{ message: string; signup?: boolean } | null>(null);
+  const [error, setError] = useState<{ message: string; signup?: boolean; plans?: boolean } | null>(null);
   const [isRefreshing, startTransition] = useTransition();
 
   const sending = pending !== null || isRefreshing;
@@ -97,7 +100,11 @@ export function FollowUpThread({
         });
         return;
       }
-      setError({ message: data.message ?? "Something went wrong. Please try again.", signup: data.code === "signup_required" });
+      setError({
+        message: data.message ?? "Something went wrong. Please try again.",
+        signup: data.code === "signup_required",
+        plans: data.code === "subscription_required",
+      });
     } catch {
       setError({ message: "We lost the connection. Check your signal and try again." });
     }
@@ -145,7 +152,14 @@ export function FollowUpThread({
           </div>
         )}
 
-        {outOfTurns ? (
+        {locked ? (
+          <div className="rounded-xl bg-muted p-3 text-sm">
+            Your free trial has ended, so follow-ups are paused.{" "}
+            <Link href="/pricing" className="font-medium text-primary underline">
+              See plans
+            </Link>
+          </div>
+        ) : outOfTurns ? (
           <div className="rounded-xl bg-muted p-3 text-sm">
             {signedIn ? (
               "That's the most follow-ups for one diagnosis. For something new, start a fresh diagnosis with new photos."
@@ -225,6 +239,11 @@ export function FollowUpThread({
             {error.signup && (
               <Link href={`/login?reason=save&next=/d/${diagnosisId}`} className="font-medium underline">
                 Create a free account
+              </Link>
+            )}
+            {error.plans && (
+              <Link href="/pricing" className="font-medium underline">
+                See plans
               </Link>
             )}
           </p>

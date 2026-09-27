@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { Access } from "@/lib/access";
+import { accessAllowsPaidFeatures, getAccess } from "@/lib/billing";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Viewer } from "@/lib/viewer";
 
@@ -15,14 +17,17 @@ export const ANON_FREE_PER_KIND = 1;
  * generous because mobile carriers put many real users behind one IP (CGNAT).
  */
 export const ANON_PER_IP_PER_DAY = 5;
-/** Cost backstop for signed-in users until the paywall lands (Phase 3). Both kinds combined. */
+/** Fair-use backstop for signed-in users (trial or paid), both kinds combined. */
 export const USER_PER_DAY = 25;
 /** Follow-up answers allowed on one diagnosis. */
 export const FOLLOW_UPS_PER_DIAGNOSIS = { anonymous: 2, signedIn: 6 };
 
+export type DenyReason = "signup_required" | "subscription_required" | "rate_limited";
+
+/** `access` is set for signed-in viewers, so pages can show trial status without a second lookup. */
 export type Allowance =
-  | { allowed: true }
-  | { allowed: false; reason: "signup_required" | "rate_limited" };
+  | { allowed: true; access?: Access }
+  | { allowed: false; reason: DenyReason; access?: Access };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 // In-flight requests count too, so two fast taps can't both use the free one.
@@ -57,8 +62,10 @@ export async function checkAllowance(kind: RunKind, viewer: Viewer, ipHash: stri
   const since = new Date(Date.now() - DAY_MS).toISOString();
 
   if (viewer.userId) {
+    const access = await getAccess(viewer.userId);
+    if (!accessAllowsPaidFeatures(access)) return { allowed: false, reason: "subscription_required", access };
     const used = await countBothKinds({ userId: viewer.userId, since });
-    return used >= USER_PER_DAY ? { allowed: false, reason: "rate_limited" } : { allowed: true };
+    return used >= USER_PER_DAY ? { allowed: false, reason: "rate_limited", access } : { allowed: true, access };
   }
 
   if (viewer.anonId) {
@@ -73,3 +80,17 @@ export async function checkAllowance(kind: RunKind, viewer: Viewer, ipHash: stri
 
   return { allowed: true };
 }
+
+/** API error for a denied run. 402 tells the client to send the viewer to the plans. */
+export const DENY_RESPONSES: Record<RunKind, Record<DenyReason, { status: number; message: string }>> = {
+  diagnosis: {
+    signup_required: { status: 401, message: "Create a free account to run another diagnosis." },
+    subscription_required: { status: 402, message: "Your free trial has ended. Choose a plan to keep diagnosing." },
+    rate_limited: { status: 429, message: "You've hit today's limit. Please try again tomorrow." },
+  },
+  quote: {
+    signup_required: { status: 401, message: "Create a free account to check another quote." },
+    subscription_required: { status: 402, message: "Your free trial has ended. Choose a plan to keep checking quotes." },
+    rate_limited: { status: 429, message: "You've hit today's limit. Please try again tomorrow." },
+  },
+};

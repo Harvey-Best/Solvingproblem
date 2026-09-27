@@ -7,6 +7,7 @@ import { DiagnosisResult } from "@/components/result/diagnosis-result";
 import { FollowUpThread } from "@/components/thread/follow-up-thread";
 import { Button } from "@/components/ui/button";
 import { FOLLOW_UPS_PER_DIAGNOSIS } from "@/lib/allowance";
+import { accessAllowsPaidFeatures, getAccess } from "@/lib/billing";
 import { getDiagnosisForViewer, getThread, signImageUrls } from "@/lib/diagnoses";
 import { latestDiagnosis, successfulTurns, toExchanges } from "@/lib/thread";
 import { getViewer } from "@/lib/viewer";
@@ -45,6 +46,7 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
   const turns = successfulTurns(exchanges);
   const current = latestDiagnosis(record.result_json, exchanges);
   const cap = viewer.userId ? FOLLOW_UPS_PER_DIAGNOSIS.signedIn : FOLLOW_UPS_PER_DIAGNOSIS.anonymous;
+  const locked = viewer.userId ? !accessAllowsPaidFeatures(await getAccess(viewer.userId)) : false;
 
   return (
     <main id="top" className="mx-auto w-full max-w-2xl flex-1 scroll-mt-20 px-4 py-6">
@@ -62,6 +64,7 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
           suggestions={current.follow_up_questions}
           remaining={Math.max(0, cap - turns.length)}
           signedIn={Boolean(viewer.userId)}
+          locked={locked}
         />
       </div>
 

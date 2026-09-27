@@ -52,6 +52,13 @@ export function DiagnoseForm({ initialCategory }: { initialCategory?: CategoryId
         router.push(`/d/${data.id}`);
         return; // keep the overlay up while the result page loads
       }
+      if (data.code === "subscription_required") {
+        // The trial ended in another tab; reloading shows the plans.
+        router.refresh();
+        setError(data.message);
+        setSubmitting(false);
+        return;
+      }
       if (data.code === "signup_required") {
         router.push("/login?reason=more&next=/diagnose");
         return;

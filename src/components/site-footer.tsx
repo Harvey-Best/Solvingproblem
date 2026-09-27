@@ -4,6 +4,7 @@ export const FOOTER_LINKS = [
   { href: "/diagnose", label: "Diagnose a problem" },
   { href: "/quote", label: "Check a quote" },
   { href: "/guides", label: "Repair guides" },
+  { href: "/pricing", label: "Pricing" },
 ];
 
 export function SiteFooter() {

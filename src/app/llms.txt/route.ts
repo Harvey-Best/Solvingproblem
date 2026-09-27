@@ -1,5 +1,6 @@
 import { SEVERITY_META, SEVERITIES } from "@/lib/diagnosis-meta";
 import { GUIDES } from "@/lib/guides";
+import { PLANS, TRIAL_DAYS } from "@/lib/plans";
 import { LANDING_FAQS } from "@/lib/seo";
 import { SITE, absoluteUrl } from "@/lib/site";
 
@@ -24,7 +25,13 @@ export function GET() {
     "- A typical price range for hiring a professional, and a script of what to tell the pro",
     "- Follow-up questions; answering them re-runs and refines the diagnosis",
     "",
-    "Gas smells, sparking or burning, water near electrical, sagging structure and carbon monoxide alarms are always escalated to \"Stop and call a pro now\". The first diagnosis is free and needs no account.",
+    "Gas smells, sparking or burning, water near electrical, sagging structure and carbon monoxide alarms are always escalated to \"Stop and call a pro now\".",
+    "",
+    "## Pricing",
+    "",
+    "- First diagnosis and first quote check: free, no account needed",
+    `- Then a ${TRIAL_DAYS}-day free trial when you create an account, no card needed`,
+    `- After that: ${PLANS.monthly.priceLabel} or ${PLANS.yearly.priceLabel}, cancel anytime ([pricing](${absoluteUrl("/pricing")}))`,
     "",
     "## App",
     "",

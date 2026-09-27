@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { Paywall, TrialStatus } from "@/components/billing/access-ui";
 import { DiagnoseForm } from "@/components/diagnose/diagnose-form";
 import { ModeTabs } from "@/components/mode-tabs";
 import { TrackOnMount } from "@/components/track-on-mount";
@@ -49,7 +50,10 @@ export default async function DiagnosePage(props: PageProps<"/diagnose">) {
           ? "Snap it, tell us what's going on, and get a straight answer."
           : "Your first diagnosis is free. No account needed."}
       </p>
-      {!allowance.allowed ? (
+      <TrialStatus access={allowance.access} />
+      {!allowance.allowed && allowance.reason === "subscription_required" && allowance.access ? (
+        <Paywall access={allowance.access} kind="diagnosis" />
+      ) : !allowance.allowed ? (
         <p className="mt-6 rounded-xl border bg-card p-4 text-sm">
           You&apos;ve hit today&apos;s diagnosis limit. Please come back tomorrow.
         </p>

@@ -13,7 +13,15 @@ const REASONS: Record<string, { title: string; description: string }> = {
   more: {
     title: "Your free diagnosis is used up",
     description:
-      "Create a free account to keep going. We'll save the diagnosis you already ran to your account.",
+      "Create an account to start your 7-day free trial, no card needed. We'll save the diagnosis you already ran.",
+  },
+  trial: {
+    title: "Start your 7-day free trial",
+    description: "Create an account with your email or Google. No card needed.",
+  },
+  subscribe: {
+    title: "Sign in to choose a plan",
+    description: "New here? Creating an account starts your 7-day free trial first. No card needed.",
   },
   save: {
     title: "Save your results",
@@ -22,7 +30,7 @@ const REASONS: Record<string, { title: string; description: string }> = {
   quote: {
     title: "Your free quote check is used up",
     description:
-      "Create a free account to check another quote. We'll save the one you already checked to your account.",
+      "Create an account to start your 7-day free trial, no card needed. We'll save the quote you already checked.",
   },
   history: {
     title: "Sign in to see your history",

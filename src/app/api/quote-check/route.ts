@@ -5,7 +5,7 @@ import { modelOptions } from "@/lib/ai/client";
 import { logColumns } from "@/lib/ai/log-columns";
 import { runQuoteCheck } from "@/lib/ai/quote-check";
 import { QUOTE_PROMPT_VERSION } from "@/lib/ai/quote-prompt";
-import { checkAllowance } from "@/lib/allowance";
+import { DENY_RESPONSES, checkAllowance } from "@/lib/allowance";
 import { env } from "@/lib/env";
 import { loadImages } from "@/lib/images";
 import { pathBelongsTo } from "@/lib/storage-paths";
@@ -39,9 +39,8 @@ export async function POST(request: Request) {
   const ipHash = viewer.userId ? null : await getIpHash();
   const allowance = await checkAllowance("quote", viewer, ipHash);
   if (!allowance.allowed) {
-    return allowance.reason === "signup_required"
-      ? errorResponse(401, "signup_required", "Create a free account to check another quote.")
-      : errorResponse(429, "rate_limited", "You've hit today's limit. Please try again tomorrow.");
+    const deny = DENY_RESPONSES.quote[allowance.reason];
+    return errorResponse(deny.status, allowance.reason, deny.message);
   }
 
   const admin = createAdminClient();

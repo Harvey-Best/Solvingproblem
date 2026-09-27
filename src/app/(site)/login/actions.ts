@@ -4,8 +4,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { claimAnonymousWork } from "@/lib/claim";
 import { env } from "@/lib/env";
+import { onSignedIn } from "@/lib/onboarding";
 import { createClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/utils";
 
@@ -58,7 +58,7 @@ export async function verifyEmailCode(_prev: LoginState, formData: FormData): Pr
     return { step: "code", email: email.data, error: "That code didn't work. It may have expired." };
   }
 
-  await claimAnonymousWork(data.user.id);
+  await onSignedIn(data.user.id);
   redirect(next);
 }
 

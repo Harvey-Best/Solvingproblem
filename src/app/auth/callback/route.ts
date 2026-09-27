@@ -1,7 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { claimAnonymousWork } from "@/lib/claim";
+import { onSignedIn } from "@/lib/onboarding";
 import { createClient } from "@/lib/supabase/server";
 import { safeNextPath } from "@/lib/utils";
 
@@ -38,6 +38,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  await claimAnonymousWork(userId);
+  await onSignedIn(userId);
   return NextResponse.redirect(`${origin}${next}`);
 }

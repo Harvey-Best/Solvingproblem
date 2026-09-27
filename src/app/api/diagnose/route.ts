@@ -5,7 +5,7 @@ import { modelOptions } from "@/lib/ai/client";
 import { runDiagnosis, type ImageInput } from "@/lib/ai/diagnose";
 import { logColumns } from "@/lib/ai/log-columns";
 import { DIAGNOSIS_PROMPT_VERSION } from "@/lib/ai/prompt";
-import { checkAllowance } from "@/lib/allowance";
+import { DENY_RESPONSES, checkAllowance } from "@/lib/allowance";
 import { CATEGORY_IDS } from "@/lib/diagnosis-meta";
 import { env } from "@/lib/env";
 import { loadImages } from "@/lib/images";
@@ -44,9 +44,8 @@ export async function POST(request: Request) {
   const ipHash = viewer.userId ? null : await getIpHash();
   const allowance = await checkAllowance("diagnosis", viewer, ipHash);
   if (!allowance.allowed) {
-    return allowance.reason === "signup_required"
-      ? errorResponse(401, "signup_required", "Create a free account to run another diagnosis.")
-      : errorResponse(429, "rate_limited", "You've hit today's limit. Please try again tomorrow.");
+    const deny = DENY_RESPONSES.diagnosis[allowance.reason];
+    return errorResponse(deny.status, allowance.reason, deny.message);
   }
 
   const admin = createAdminClient();

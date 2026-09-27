@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import type { Guide } from "@/lib/guides";
+import { PLANS, TRIAL_DAYS } from "@/lib/plans";
 import { SITE, absoluteUrl } from "@/lib/site";
 
 /** The site-wide share image (src/app/opengraph-image.tsx). */
@@ -62,7 +63,7 @@ export const LANDING_FAQS: { q: string; a: string }[] = [
   },
   {
     q: "Is Home Doctor free?",
-    a: "Your first diagnosis and your first quote check are free and don't need an account. After that, you sign in to keep going.",
+    a: `Your first diagnosis and your first quote check are free and don't need an account. Creating an account starts a ${TRIAL_DAYS}-day free trial, no card needed. After that it's ${PLANS.monthly.priceLabel} or ${PLANS.yearly.priceLabel}, and you can cancel anytime.`,
   },
   {
     q: "How accurate is a diagnosis from a photo?",
@@ -134,12 +135,29 @@ export function webApplicationJsonLd(): JsonLd {
       "Follow-up questions that refine the diagnosis",
       "Contractor quote review: missing items, red flags and price check",
     ],
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-      description: "First diagnosis free, no account needed.",
-    },
+    offers: [
+      {
+        "@type": "Offer",
+        name: "Free diagnosis",
+        price: "0",
+        priceCurrency: "USD",
+        description: `First diagnosis free with no account, then a ${TRIAL_DAYS}-day free trial with no card.`,
+      },
+      ...Object.values(PLANS).map((plan) => ({
+        "@type": "Offer",
+        name: `Home Doctor ${plan.label}`,
+        price: plan.price.toFixed(2),
+        priceCurrency: "USD",
+        url: absoluteUrl("/pricing"),
+        priceSpecification: {
+          "@type": "UnitPriceSpecification",
+          price: plan.price.toFixed(2),
+          priceCurrency: "USD",
+          billingDuration: 1,
+          unitCode: plan.interval === "month" ? "MON" : "ANN",
+        },
+      })),
+    ],
     publisher: { "@id": ORG_ID() },
   };
 }
