@@ -1,3 +1,5 @@
+import type React from "react";
+
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -27,4 +29,9 @@ export function formatUsd(n: number) {
 export function formatUsdRange(low: number, high: number) {
   if (Math.round(low) === Math.round(high)) return formatUsd(low);
   return `${formatUsd(low)}–${formatUsd(high)}`;
+}
+
+/** Typed helper for passing CSS custom properties through a style prop. */
+export function cssVars(vars: Record<`--${string}`, string | number>): React.CSSProperties {
+  return vars as React.CSSProperties;
 }
