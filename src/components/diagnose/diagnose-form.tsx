@@ -267,10 +267,10 @@ export function DiagnoseForm() {
                 aria-pressed={selected}
                 onClick={() => setCategory(selected ? null : c.id)}
                 className={cn(
-                  "rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+                  "rounded-full border px-3.5 py-2 text-sm font-medium transition-all duration-200 active:scale-95",
                   selected
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "bg-card hover:bg-accent"
+                    ? "border-transparent bg-(image:--grad) text-primary-foreground shadow-[0_8px_18px_-12px_var(--primary)]"
+                    : "bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
                 )}
               >
                 <span className="mr-1" aria-hidden>

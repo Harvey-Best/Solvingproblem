@@ -6,15 +6,13 @@ import { getViewer } from "@/lib/viewer";
 
 export function Logo() {
   return (
-    <span className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-      <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M3 11.5 12 4l9 7.5" />
-          <path d="M5.5 10v9.5h13V10" />
-          <path d="M12 12.5v5M9.5 15h5" />
+    <span className="flex items-center gap-2.5">
+      <span className="grid size-8 place-items-center rounded-[10px] bg-(image:--grad) text-white">
+        <svg viewBox="0 0 24 24" className="size-4" fill="currentColor" aria-hidden="true">
+          <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" />
         </svg>
       </span>
-      Home Doctor
+      <span className="font-display text-[21px] font-semibold tracking-tight">Home Doctor</span>
     </span>
   );
 }

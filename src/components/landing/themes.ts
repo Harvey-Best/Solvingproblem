@@ -1,4 +1,4 @@
-import type { HouseCallTheme } from "@/components/templates/house-call";
+import type { HouseCallTheme } from "@/components/landing/house-call";
 
 export const GREEN: HouseCallTheme = {
   slug: "green",

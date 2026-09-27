@@ -33,7 +33,7 @@ export default async function LoginPage(props: PageProps<"/login">) {
     <main className="mx-auto w-full max-w-md flex-1 px-4 py-8">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">{reason?.title ?? "Sign in to Home Doctor"}</CardTitle>
+          <CardTitle className="font-display text-[1.75rem] font-semibold">{reason?.title ?? "Sign in to Home Doctor"}</CardTitle>
           <CardDescription>
             {reason?.description ?? "No password needed. We'll email you a link and a code."}
           </CardDescription>

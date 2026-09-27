@@ -29,28 +29,51 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Light-only for the MVP: a warm off-white with a teal "home doctor" primary. */
+/*
+ * Light-only for the MVP. "Blue gradient": warm off-white, deep navy ink, and
+ * a royal-blue-to-cyan gradient as the one strong accent. Gradient stops stay
+ * dark enough for white text.
+ */
 :root {
   color-scheme: light;
   --radius: 0.75rem;
-  --background: oklch(0.985 0.005 90);
-  --foreground: oklch(0.22 0.02 250);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.22 0.02 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.22 0.02 250);
-  --primary: oklch(0.48 0.1 178);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.95 0.025 178);
-  --secondary-foreground: oklch(0.32 0.07 178);
-  --muted: oklch(0.955 0.006 90);
-  --muted-foreground: oklch(0.5 0.02 250);
-  --accent: oklch(0.95 0.025 178);
-  --accent-foreground: oklch(0.32 0.07 178);
-  --destructive: oklch(0.577 0.215 27);
-  --border: oklch(0.91 0.008 90);
-  --input: oklch(0.88 0.01 90);
-  --ring: oklch(0.48 0.1 178);
+  --background: #f4f2ec;
+  --foreground: #0e1b2c;
+  --card: #ffffff;
+  --card-foreground: #0e1b2c;
+  --popover: #ffffff;
+  --popover-foreground: #0e1b2c;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
+  --secondary: #dde8fd;
+  --secondary-foreground: #1e3a8a;
+  --muted: #ebe8e0;
+  --muted-foreground: #51607a;
+  --accent: #e6eefd;
+  --accent-foreground: #1e3a8a;
+  --destructive: #dc2626;
+  --border: #d7d7d3;
+  --input: #cfcfca;
+  --ring: #1d4ed8;
+
+  --grad: linear-gradient(120deg, #1d4ed8, #0369a1, #0e7490);
+  --grad-soft: linear-gradient(120deg, #dce7ff, #d3f1f6);
+  --glow-a: #93c5fd;
+  --glow-b: #67e8f9;
+}
+
+/* Fraunces with its soft axis turned up, for headlines. */
+@utility font-display {
+  font-family: var(--font-fraunces), Georgia, serif;
+  font-variation-settings: "SOFT" 100, "WONK" 0;
+}
+
+/* Text painted with the brand gradient. */
+@utility text-gradient {
+  background-image: var(--grad);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }
 
 @layer base {

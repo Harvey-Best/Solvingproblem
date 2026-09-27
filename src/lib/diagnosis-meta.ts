@@ -43,7 +43,7 @@ export type Severity = (typeof SEVERITIES)[number];
 export const SEVERITY_META: Record<Severity, { label: string; className: string; blurb: string }> = {
   cosmetic: {
     label: "Cosmetic",
-    className: "bg-emerald-100 text-emerald-900 border-emerald-200",
+    className: "bg-secondary text-secondary-foreground border-transparent",
     blurb: "Looks bad, but it isn't hurting anything.",
   },
   fix_soon: {
@@ -67,9 +67,9 @@ export const DIY_VERDICTS = ["diy", "diy_if_handy", "call_pro"] as const;
 export type DiyVerdict = (typeof DIY_VERDICTS)[number];
 
 export const DIY_VERDICT_META: Record<DiyVerdict, { label: string; className: string }> = {
-  diy: { label: "DIY", className: "bg-emerald-600 text-white" },
+  diy: { label: "DIY", className: "bg-(image:--grad) text-white" },
   diy_if_handy: { label: "DIY if handy", className: "bg-amber-500 text-white" },
-  call_pro: { label: "Call a pro", className: "bg-slate-800 text-white" },
+  call_pro: { label: "Call a pro", className: "bg-foreground text-background" },
 };
 
 export const CONFIDENCE_LEVELS = ["low", "medium", "high"] as const;

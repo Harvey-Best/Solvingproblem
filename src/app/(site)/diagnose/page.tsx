@@ -32,7 +32,7 @@ export default async function DiagnosePage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
       <TrackOnMount event="diagnose_start" properties={{ signed_in: Boolean(viewer.userId) }} />
-      <h1 className="text-2xl font-bold tracking-tight">What&apos;s the problem?</h1>
+      <h1 className="font-display text-3xl font-semibold tracking-tight">What&apos;s the problem?</h1>
       <p className="mt-1 text-muted-foreground">
         {viewer.userId
           ? "Snap it, tell us what's going on, and get a straight answer."

@@ -1,6 +1,7 @@
 /*
- * Shared motion for the /templates design previews. Pure CSS (no JS needed to
- * see content), and everything switches off under prefers-reduced-motion.
+ * Shared motion (entrance and scroll animations) and illustration paint
+ * classes. Pure CSS, so content never depends on JS to become visible, and
+ * everything switches off under prefers-reduced-motion.
  */
 
 @keyframes t-drip {

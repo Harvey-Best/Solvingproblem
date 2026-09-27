@@ -40,12 +40,17 @@ function SectionTitle({ icon: Icon, children }: { icon: typeof Wrench; children:
   );
 }
 
-function StepList({ steps }: { steps: string[] }) {
+function StepList({ steps, urgent = false }: { steps: string[]; urgent?: boolean }) {
   return (
     <ol className="space-y-3">
       {steps.map((step, i) => (
         <li key={i} className="flex gap-3">
-          <span className="grid size-6 shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+          <span
+            className={cn(
+              "grid size-6 shrink-0 place-items-center rounded-full text-xs font-semibold",
+              urgent ? "bg-red-100 text-red-800" : "bg-secondary text-secondary-foreground"
+            )}
+          >
             {i + 1}
           </span>
           <span className="pt-0.5 text-[15px] leading-relaxed">{step}</span>
@@ -86,7 +91,7 @@ export function DiagnosisResult({ diagnosis: d, imageUrls }: { diagnosis: Diagno
             {categoryLabel(d.category)}
           </Badge>
         </div>
-        <h1 className="text-balance text-3xl font-bold leading-tight tracking-tight">{d.title}</h1>
+        <h1 className="text-balance font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight">{d.title}</h1>
       </div>
 
       {emergency ? (
@@ -100,7 +105,7 @@ export function DiagnosisResult({ diagnosis: d, imageUrls }: { diagnosis: Diagno
           {d.diy_steps.length > 0 && (
             <CardContent className="text-red-950">
               <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-red-800">Do this right now</p>
-              <StepList steps={d.diy_steps} />
+              <StepList steps={d.diy_steps} urgent />
             </CardContent>
           )}
         </Card>
@@ -238,7 +243,7 @@ export function DiagnosisResult({ diagnosis: d, imageUrls }: { diagnosis: Diagno
           <SectionTitle icon={Wrench}>What a pro should charge</SectionTitle>
         </CardHeader>
         <CardContent className="space-y-1.5">
-          <p className="text-3xl font-bold tracking-tight">
+          <p className="text-gradient w-fit text-4xl font-bold tracking-tight">
             {formatUsdRange(d.pro_cost_range.low, d.pro_cost_range.high)}
           </p>
           <p className="text-sm text-muted-foreground">{d.pro_cost_range.note}</p>

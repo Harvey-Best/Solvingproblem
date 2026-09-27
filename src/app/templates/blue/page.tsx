@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { HouseCallTemplate } from "@/components/templates/house-call";
-import { BLUE } from "@/components/templates/house-call-themes";
+import { HouseCallTemplate } from "@/components/landing/house-call";
+import { BLUE } from "@/components/landing/themes";
 
 export const metadata: Metadata = { title: "Template: Blue gradient" };
 

@@ -22,7 +22,7 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
   if (record.status !== "complete" || !record.result_json) {
     return (
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
-        <h1 className="text-2xl font-bold">
+        <h1 className="font-display text-3xl font-semibold">
           {record.status === "pending" ? "Still working on it" : "We couldn't finish this one"}
         </h1>
         <p className="mt-2 text-muted-foreground">
@@ -44,8 +44,8 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
       <DiagnosisResult diagnosis={record.result_json} imageUrls={imageUrls} />
 
       {!viewer.userId && (
-        <div className="mt-6 rounded-2xl border-2 border-primary/30 bg-secondary/60 p-5">
-          <p className="font-semibold">Save this diagnosis</p>
+        <div className="mt-6 rounded-3xl border border-primary/15 bg-(image:--grad-soft) p-5">
+          <p className="font-display text-xl font-semibold">Save this diagnosis</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Create a free account to keep it, come back to it later, and run your next diagnosis.
           </p>
