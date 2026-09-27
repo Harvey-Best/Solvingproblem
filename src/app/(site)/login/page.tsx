@@ -7,7 +7,7 @@ import { getViewer } from "@/lib/viewer";
 
 import { LoginForm } from "./login-form";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: true } };
 
 const REASONS: Record<string, { title: string; description: string }> = {
   more: {

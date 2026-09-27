@@ -17,11 +17,11 @@ import { cn } from "@/lib/utils";
 
 const MAX_DESCRIPTION = 2000;
 
-export function DiagnoseForm() {
+export function DiagnoseForm({ initialCategory }: { initialCategory?: CategoryId } = {}) {
   const router = useRouter();
   const uploads = usePhotoUploads();
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState<CategoryId | null>(null);
+  const [category, setCategory] = useState<CategoryId | null>(initialCategory ?? null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

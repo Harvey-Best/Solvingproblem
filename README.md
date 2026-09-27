@@ -31,6 +31,14 @@ redirect /d/[id] ◄────────────────────
 - **Strict output.** `src/lib/ai/schema.ts` is sent as a structured-output JSON schema and re-validated with zod. One retry on a bad parse; a friendly error after two failures (it doesn't count against the user).
 - **Safety.** The system prompt (`src/lib/ai/prompt.ts`) requires escalation for gas, sparking, water near electrical, sagging structure and CO. On top of that, `src/lib/ai/safety.ts` scans the homeowner's own words and forces "Stop and call a pro now" if the model under-called it. Every forced escalation is logged in `diagnoses.safety_overrides`.
 - **Quality log.** Every request writes a `diagnoses` row with the prompt version, the text sent (no image bytes), raw response, tokens, latency, attempts and any error.
+- **Guides.** `/guides` and `/guides/[slug]` are evergreen problem guides (water heater leaking, running toilet, tripping breaker, AC not cooling, ceiling water stain, drywall cracks), written from `src/lib/guides.ts`. Each one leads with a quick answer, then causes and how to tell them apart, safe first steps, when to call a pro, a cost table, a script for the pro, and FAQs. The CTAs open `/diagnose?category=…` with the category chip preselected.
+- **Search and AI discoverability** (SEO + GEO):
+  - Every public page has a canonical URL, Open Graph and Twitter tags (`pageMetadata` in `src/lib/seo.ts`). The canonical host is `NEXT_PUBLIC_SITE_URL`, falling back to Vercel's production domain, so previews never compete with production.
+  - `robots.txt` (`src/app/robots.ts`) opens public pages to search engines and AI crawlers (GPTBot, ClaudeBot, PerplexityBot, Google-Extended and others) and keeps private and per-user pages out. Preview deployments disallow everything and are `noindex`.
+  - `sitemap.xml`, `manifest.webmanifest`, the favicon, the app icons, and branded share images: `/opengraph-image` site-wide and `/og/guides/<slug>` per guide.
+  - JSON-LD: Organization, WebSite, WebApplication and FAQPage on the landing page; Article, BreadcrumbList and FAQPage on guides.
+  - `/llms.txt`: a markdown summary of the product, the guides and the FAQ for AI assistants, built from the same data as the pages.
+  - The landing FAQ (`LANDING_FAQS`) and the guides' quick answers are written as short, self-contained answers that can be quoted directly.
 - **Attribution.** First-touch `utm_*` and click ids (`fbclid`, `ttclid`, `gclid`, `rdt_cid`) are stored in the `hd_utm` cookie on landing. At sign-in they're copied to `users.utm`, and to `diagnoses.utm` for anonymous runs.
 
 ## Setup
@@ -65,7 +73,9 @@ Dev-only previews that need no keys:
 
 ### 3. Deploy (Vercel)
 
-Import the repo in Vercel and add the env vars from `.env.example` (set `NEXT_PUBLIC_SITE_URL` to the production URL), then deploy. `/api/diagnose` sets `maxDuration = 300`, which fits within Vercel's default function limit.
+Import the repo in Vercel and add the env vars from `.env.example` (set `NEXT_PUBLIC_SITE_URL` to the production URL, and update it when you add a custom domain: canonicals, the sitemap and `llms.txt` use it), then deploy.
+
+A dashboard **Redeploy** rebuilds the same commit as the deployment you click it on. To ship new code, deploy the branch's latest commit (or merge it into the production branch). `/api/diagnose` sets `maxDuration = 300`, which fits within Vercel's default function limit.
 
 ## Scripts
 
@@ -75,7 +85,7 @@ Import the repo in Vercel and add the env vars from `.env.example` (set `NEXT_PU
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Route type generation + `tsc` |
-| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM) |
+| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO) |
 
 ## Quality review
 

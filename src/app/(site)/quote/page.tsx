@@ -1,13 +1,18 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { ModeTabs } from "@/components/mode-tabs";
 import { QuoteForm } from "@/components/quote/quote-form";
 import { checkAllowance } from "@/lib/allowance";
 import { isSupabaseConfigured } from "@/lib/env";
+import { pageMetadata } from "@/lib/seo";
 import { getIpHash, getViewer } from "@/lib/viewer";
 
-export const metadata: Metadata = { title: "Check a contractor's quote" };
+export const metadata = pageMetadata({
+  title: "Check a contractor's quote",
+  description:
+    "Photograph a contractor's quote. See what's missing, red flags like a big deposit or no license number, and whether the price is within a typical range.",
+  path: "/quote",
+});
 
 export default async function QuotePage() {
   if (!isSupabaseConfigured()) {

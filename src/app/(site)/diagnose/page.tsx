@@ -1,16 +1,25 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { DiagnoseForm } from "@/components/diagnose/diagnose-form";
 import { ModeTabs } from "@/components/mode-tabs";
 import { TrackOnMount } from "@/components/track-on-mount";
 import { checkAllowance } from "@/lib/allowance";
+import { CATEGORY_IDS } from "@/lib/diagnosis-meta";
 import { isSupabaseConfigured } from "@/lib/env";
+import { pageMetadata } from "@/lib/seo";
 import { getIpHash, getViewer } from "@/lib/viewer";
 
-export const metadata: Metadata = { title: "Diagnose a problem" };
+export const metadata = pageMetadata({
+  title: "Diagnose a home problem from a photo",
+  description:
+    "Snap a leak, crack or dead outlet. Get the likely cause, how urgent it is, DIY steps with parts and prices, and what a pro should charge. First one free.",
+  path: "/diagnose",
+});
 
-export default async function DiagnosePage() {
+export default async function DiagnosePage(props: PageProps<"/diagnose">) {
+  const { category } = await props.searchParams;
+  const initialCategory = CATEGORY_IDS.find((id) => id === category);
+
   if (!isSupabaseConfigured()) {
     return (
       <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
@@ -46,7 +55,7 @@ export default async function DiagnosePage() {
         </p>
       ) : (
         <div className="mt-6">
-          <DiagnoseForm />
+          <DiagnoseForm initialCategory={initialCategory} />
         </div>
       )}
     </main>
