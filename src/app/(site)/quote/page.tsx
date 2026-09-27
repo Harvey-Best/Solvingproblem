@@ -1,0 +1,48 @@
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+
+import { ModeTabs } from "@/components/mode-tabs";
+import { QuoteForm } from "@/components/quote/quote-form";
+import { checkAllowance } from "@/lib/allowance";
+import { isSupabaseConfigured } from "@/lib/env";
+import { getIpHash, getViewer } from "@/lib/viewer";
+
+export const metadata: Metadata = { title: "Check a contractor's quote" };
+
+export default async function QuotePage() {
+  if (!isSupabaseConfigured()) {
+    return (
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
+        <h1 className="font-display text-3xl font-semibold">Almost there</h1>
+        <p className="mt-2 text-muted-foreground">Supabase isn&apos;t configured yet. See the README.</p>
+      </main>
+    );
+  }
+
+  const viewer = await getViewer();
+  const ipHash = viewer.userId ? null : await getIpHash();
+  const allowance = await checkAllowance("quote", viewer, ipHash);
+  if (!allowance.allowed && allowance.reason === "signup_required") {
+    redirect("/login?reason=quote&next=/quote");
+  }
+
+  return (
+    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+      <ModeTabs active="quote" />
+      <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">Check a contractor&apos;s quote</h1>
+      <p className="mt-1 text-muted-foreground">
+        We&apos;ll list what&apos;s in it, what&apos;s missing, any red flags, and whether the price is in a typical
+        range.{!viewer.userId && " Your first quote check is free."}
+      </p>
+      {!allowance.allowed ? (
+        <p className="mt-6 rounded-xl border bg-card p-4 text-sm">
+          You&apos;ve hit today&apos;s limit. Please come back tomorrow.
+        </p>
+      ) : (
+        <div className="mt-6">
+          <QuoteForm />
+        </div>
+      )}
+    </main>
+  );
+}

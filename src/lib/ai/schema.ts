@@ -71,6 +71,11 @@ export const diagnosisSchema = z.object({
   follow_up_questions: z
     .array(z.string())
     .describe("0-4 questions whose answers would most change or firm up the diagnosis"),
+  what_changed: z
+    .string()
+    .describe(
+      "Follow-ups only: 1-2 sentences on what changed from your previous answer and why. Empty string on the first diagnosis."
+    ),
 });
 
 export type Diagnosis = z.infer<typeof diagnosisSchema>;

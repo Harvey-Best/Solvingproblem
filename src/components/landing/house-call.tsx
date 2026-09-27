@@ -1,12 +1,14 @@
 import { Fraunces } from "next/font/google";
 import Link from "next/link";
 import {
+  ArrowRight,
   BrickWall,
   Camera,
   CheckCircle2,
   CloudRain,
   DoorOpen,
   Droplets,
+  FileText,
   Flame,
   PlugZap,
   Stethoscope,
@@ -321,6 +323,32 @@ export function HouseCallTemplate({
               {label}
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Quote check: compact */}
+      <section className="mx-auto max-w-6xl px-5 pb-16 lg:pb-24">
+        <div className="t-reveal flex flex-col gap-5 rounded-[2rem] border border-(--line) bg-white p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <div className="flex gap-4">
+            <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-(--accent-soft) text-(--accent)">
+              <FileText className="size-6" />
+            </span>
+            <div>
+              <h2 className={cn(fraunces.className, "text-2xl font-semibold leading-tight sm:text-3xl")} style={soft}>
+                Already have a quote?
+              </h2>
+              <p className="mt-1 max-w-xl text-(--muted)">
+                Snap it. We&apos;ll list what&apos;s missing, flag things like a big deposit or no license number, and
+                tell you if the price is in a typical range.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/quote"
+            className="group inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full border border-(--line) bg-(--bg) px-6 font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:border-(--accent) hover:text-(--accent) active:scale-[0.97]"
+          >
+            Check a quote <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
       </section>
 

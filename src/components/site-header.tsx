@@ -30,7 +30,7 @@ export async function SiteHeader() {
           {userId ? (
             <>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/diagnose">New diagnosis</Link>
+                <Link href="/history">History</Link>
               </Button>
               <form action={signOut}>
                 <Button type="submit" variant="ghost" size="sm">

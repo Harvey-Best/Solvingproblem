@@ -20,8 +20,8 @@ async function LandingNav() {
   }
   return (
     <div className="flex items-center gap-1">
-      <Link href="/diagnose" className={navLink}>
-        New diagnosis
+      <Link href="/history" className={navLink}>
+        History
       </Link>
       <form action={signOut}>
         <button type="submit" className={navLink}>

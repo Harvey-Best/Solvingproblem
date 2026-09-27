@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { DiagnoseForm } from "@/components/diagnose/diagnose-form";
+import { ModeTabs } from "@/components/mode-tabs";
 import { TrackOnMount } from "@/components/track-on-mount";
-import { checkDiagnosisAllowance } from "@/lib/allowance";
+import { checkAllowance } from "@/lib/allowance";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getIpHash, getViewer } from "@/lib/viewer";
 
@@ -24,7 +25,7 @@ export default async function DiagnosePage() {
 
   const viewer = await getViewer();
   const ipHash = viewer.userId ? null : await getIpHash();
-  const allowance = await checkDiagnosisAllowance(viewer, ipHash);
+  const allowance = await checkAllowance("diagnosis", viewer, ipHash);
   if (!allowance.allowed && allowance.reason === "signup_required") {
     redirect("/login?reason=more&next=/diagnose");
   }
@@ -32,7 +33,8 @@ export default async function DiagnosePage() {
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
       <TrackOnMount event="diagnose_start" properties={{ signed_in: Boolean(viewer.userId) }} />
-      <h1 className="font-display text-3xl font-semibold tracking-tight">What&apos;s the problem?</h1>
+      <ModeTabs active="diagnose" />
+      <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">What&apos;s the problem?</h1>
       <p className="mt-1 text-muted-foreground">
         {viewer.userId
           ? "Snap it, tell us what's going on, and get a straight answer."

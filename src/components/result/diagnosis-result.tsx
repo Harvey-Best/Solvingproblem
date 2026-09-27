@@ -5,6 +5,7 @@ import {
   HelpCircle,
   Lightbulb,
   MessageSquareQuote,
+  RefreshCcw,
   ShieldAlert,
   Siren,
   Wrench,
@@ -60,7 +61,19 @@ function StepList({ steps, urgent = false }: { steps: string[]; urgent?: boolean
   );
 }
 
-export function DiagnosisResult({ diagnosis: d, imageUrls }: { diagnosis: Diagnosis; imageUrls: string[] }) {
+export function DiagnosisResult({
+  diagnosis: d,
+  imageUrls,
+  showFollowUpQuestions = true,
+  updatedCount = 0,
+}: {
+  diagnosis: Diagnosis;
+  imageUrls: string[];
+  /** Off when a follow-up thread below already offers these as answer prompts. */
+  showFollowUpQuestions?: boolean;
+  /** How many follow-up answers have updated this diagnosis. */
+  updatedCount?: number;
+}) {
   const severity = SEVERITY_META[d.severity];
   const verdict = DIY_VERDICT_META[d.diy_verdict];
   const emergency = d.severity === "call_pro_now";
@@ -90,6 +103,11 @@ export function DiagnosisResult({ diagnosis: d, imageUrls }: { diagnosis: Diagno
           <Badge variant="secondary" className="px-2.5 py-1 text-sm">
             {categoryLabel(d.category)}
           </Badge>
+          {updatedCount > 0 && (
+            <Badge className="bg-(image:--grad) px-2.5 py-1 text-sm text-white">
+              <RefreshCcw /> Updated after {updatedCount} answer{updatedCount === 1 ? "" : "s"}
+            </Badge>
+          )}
         </div>
         <h1 className="text-balance font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight">{d.title}</h1>
       </div>
@@ -267,7 +285,7 @@ export function DiagnosisResult({ diagnosis: d, imageUrls }: { diagnosis: Diagno
         </CardContent>
       </Card>
 
-      {d.follow_up_questions.length > 0 && (
+      {showFollowUpQuestions && d.follow_up_questions.length > 0 && (
         <Card>
           <CardHeader>
             <SectionTitle icon={HelpCircle}>To be more sure, I&apos;d want to know</SectionTitle>

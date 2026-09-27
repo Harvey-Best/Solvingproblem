@@ -4,8 +4,11 @@ import { notFound } from "next/navigation";
 import { Camera, Save } from "lucide-react";
 
 import { DiagnosisResult } from "@/components/result/diagnosis-result";
+import { FollowUpThread } from "@/components/thread/follow-up-thread";
 import { Button } from "@/components/ui/button";
-import { getDiagnosisForViewer, signImageUrls } from "@/lib/diagnoses";
+import { FOLLOW_UPS_PER_DIAGNOSIS } from "@/lib/allowance";
+import { getDiagnosisForViewer, getThread, signImageUrls } from "@/lib/diagnoses";
+import { latestDiagnosis, successfulTurns, toExchanges } from "@/lib/thread";
 import { getViewer } from "@/lib/viewer";
 
 export const metadata: Metadata = {
@@ -37,11 +40,30 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
     );
   }
 
-  const imageUrls = await signImageUrls(record.image_paths);
+  const [imageUrls, thread] = await Promise.all([signImageUrls(record.image_paths), getThread(record.id)]);
+  const exchanges = toExchanges(thread);
+  const turns = successfulTurns(exchanges);
+  const current = latestDiagnosis(record.result_json, exchanges);
+  const cap = viewer.userId ? FOLLOW_UPS_PER_DIAGNOSIS.signedIn : FOLLOW_UPS_PER_DIAGNOSIS.anonymous;
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
-      <DiagnosisResult diagnosis={record.result_json} imageUrls={imageUrls} />
+    <main id="top" className="mx-auto w-full max-w-2xl flex-1 scroll-mt-20 px-4 py-6">
+      <DiagnosisResult
+        diagnosis={current}
+        imageUrls={imageUrls}
+        showFollowUpQuestions={false}
+        updatedCount={turns.length}
+      />
+
+      <div className="mt-4">
+        <FollowUpThread
+          diagnosisId={record.id}
+          exchanges={exchanges}
+          suggestions={current.follow_up_questions}
+          remaining={Math.max(0, cap - turns.length)}
+          signedIn={Boolean(viewer.userId)}
+        />
+      </div>
 
       {!viewer.userId && (
         <div className="mt-6 rounded-3xl border border-primary/15 bg-(image:--grad-soft) p-5">

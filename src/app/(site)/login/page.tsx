@@ -16,8 +16,17 @@ const REASONS: Record<string, { title: string; description: string }> = {
       "Create a free account to keep going. We'll save the diagnosis you already ran to your account.",
   },
   save: {
-    title: "Save your diagnosis",
-    description: "Create a free account to keep this diagnosis and come back to it later.",
+    title: "Save your results",
+    description: "Create a free account to keep this and come back to it later.",
+  },
+  quote: {
+    title: "Your free quote check is used up",
+    description:
+      "Create a free account to check another quote. We'll save the one you already checked to your account.",
+  },
+  history: {
+    title: "Sign in to see your history",
+    description: "Your diagnoses and quote checks are saved to your account.",
   },
 };
 

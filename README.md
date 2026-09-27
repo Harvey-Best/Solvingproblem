@@ -23,8 +23,11 @@ POST /api/diagnose {paths, text} ────► verify paths are caller's
 redirect /d/[id] ◄──────────────────── render result (owner only)
 ```
 
+- **Follow-up threads.** Under each result, the homeowner answers the model's questions (or adds details). `POST /api/diagnose/[id]/followup` replays the whole conversation, re-runs the diagnosis, and stores both sides in `diagnosis_messages` (failures included). The photo turn carries a prompt-cache breakpoint, so follow-ups re-read the images at cache prices. The result page always shows the latest version.
+- **Quote check.** `/quote` → `POST /api/quote-check` → `/q/[id]`. Photos of a contractor quote come back as line items, a checklist of what a solid quote includes (scope, materials, permit, cleanup, warranty, payment terms, timeline, license/insurance), red flags, a typical price range with where this quote lands, and questions to ask before signing. `src/lib/ai/quote-guard.ts` always flags deposits over 30% and missing license numbers, never lets the range collapse to one number, and keeps the above/within/below label consistent with the numbers (logged in `quote_checks.guard_flags`).
+- **History.** `/history` lists a signed-in user's diagnoses and quote checks with thumbnails.
 - **Anonymous first diagnosis.** `src/proxy.ts` gives every visitor an `hd_anon` cookie. Diagnoses are keyed to it and moved to the account on sign-in (`src/lib/claim.ts`).
-- **Free-use limits** (`src/lib/allowance.ts`): 1 diagnosis per anonymous cookie, max 5 anonymous diagnoses per IP per day, 25/day for signed-in users. Stripe replaces the signed-in cap in Phase 3.
+- **Free-use limits** (`src/lib/allowance.ts`): 1 free diagnosis and 1 free quote check per anonymous cookie, max 5 anonymous runs per IP per day, 25 runs/day for signed-in users, and 2 (anonymous) / 6 (signed-in) follow-ups per diagnosis. Stripe replaces the signed-in cap in Phase 3.
 - **Strict output.** `src/lib/ai/schema.ts` is sent as a structured-output JSON schema and re-validated with zod. One retry on a bad parse; a friendly error after two failures (it doesn't count against the user).
 - **Safety.** The system prompt (`src/lib/ai/prompt.ts`) requires escalation for gas, sparking, water near electrical, sagging structure and CO. On top of that, `src/lib/ai/safety.ts` scans the homeowner's own words and forces "Stop and call a pro now" if the model under-called it. Every forced escalation is logged in `diagnoses.safety_overrides`.
 - **Quality log.** Every request writes a `diagnoses` row with the prompt version, the text sent (no image bytes), raw response, tokens, latency, attempts and any error.
@@ -56,6 +59,9 @@ Dev-only previews that need no keys:
 - `/dev/result`: the result screen.
 - `/dev/result?text=I+smell+gas`: the result screen with the safety escalation.
 - `/dev/diagnose`: the diagnose form.
+- `/dev/result?thread=1`: the result screen with a follow-up exchange.
+- `/dev/quote` and `/dev/quote-result`: the quote form and a sample quote review.
+- `/dev/history`: the history list with sample rows.
 
 ### 3. Deploy (Vercel)
 
@@ -90,6 +96,6 @@ from diagnoses where status = 'complete' group by 1, 2;
 ## Roadmap
 
 - [x] **Phase 1:** scaffold, auth (magic link + code + Google), diagnose flow with the model, result screen
-- [ ] **Phase 2:** quote check, history, follow-up threads
+- [x] **Phase 2:** quote check, history, follow-up threads
 - [ ] **Phase 3:** Stripe (trial, checkout, portal, webhooks), paywall, emails
 - [ ] **Phase 4:** mobile polish, loading states, share card, PostHog

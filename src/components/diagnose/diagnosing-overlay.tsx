@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Stethoscope } from "lucide-react";
 
-const MESSAGES = [
+const DIAGNOSIS_MESSAGES = [
   "Looking closely at your photos…",
   "Checking for anything unsafe…",
   "Working out the most likely cause…",
@@ -11,13 +11,13 @@ const MESSAGES = [
   "Writing up your fix…",
 ];
 
-export function DiagnosingOverlay() {
+export function DiagnosingOverlay({ messages = DIAGNOSIS_MESSAGES }: { messages?: string[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const id = setInterval(() => setIndex((i) => Math.min(i + 1, MESSAGES.length - 1)), 5000);
+    const id = setInterval(() => setIndex((i) => Math.min(i + 1, messages.length - 1)), 5000);
     return () => clearInterval(id);
-  }, []);
+  }, [messages.length]);
 
   return (
     <div
@@ -32,14 +32,14 @@ export function DiagnosingOverlay() {
       </div>
       <div className="space-y-2">
         <p key={index} className="animate-in fade-in slide-in-from-bottom-1 font-display text-2xl font-semibold duration-500">
-          {MESSAGES[index]}
+          {messages[index]}
         </p>
         <p className="text-sm text-muted-foreground">This usually takes 20–40 seconds. Keep this screen open.</p>
       </div>
       <div className="h-1.5 w-56 overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-(image:--grad) transition-[width] duration-[5000ms] ease-linear"
-          style={{ width: `${Math.min(95, ((index + 1) / MESSAGES.length) * 95)}%` }}
+          style={{ width: `${Math.min(95, ((index + 1) / messages.length) * 95)}%` }}
         />
       </div>
     </div>
