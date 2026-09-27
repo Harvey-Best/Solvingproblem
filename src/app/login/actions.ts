@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -21,12 +22,15 @@ export async function sendMagicLink(_prev: LoginState, formData: FormData): Prom
     return { step: "email", error: "That doesn't look like an email address." };
   }
 
+  // Send the link back to whichever deployment the user is on (prod, preview,
+  // localhost). Supabase only honors origins on its redirect allowlist.
+  const origin = (await headers()).get("origin") || env.siteUrl;
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email: email.data,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${env.siteUrl}/auth/callback?next=${encodeURIComponent(next)}`,
+      emailRedirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
   if (error) {
