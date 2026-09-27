@@ -12,10 +12,10 @@ export function SiteFooter() {
     <footer className="mt-auto border-t bg-muted/60">
       <div className="mx-auto w-full max-w-3xl space-y-3 px-4 py-6 text-xs leading-relaxed text-muted-foreground">
         <nav aria-label="Footer">
-          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm font-medium text-foreground">
+          <ul className="-my-2.5 flex flex-wrap gap-x-5 text-sm font-medium text-foreground">
             {FOOTER_LINKS.map((l) => (
               <li key={l.href}>
-                <Link href={l.href} className="hover:text-primary">
+                <Link href={l.href} className="inline-flex min-h-11 items-center hover:text-primary">
                   {l.label}
                 </Link>
               </li>
