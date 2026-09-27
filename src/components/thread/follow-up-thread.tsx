@@ -13,6 +13,8 @@ import type { ThreadExchange } from "@/lib/thread";
 import { cn } from "@/lib/utils";
 
 const MAX_LENGTH = 1000;
+/** Matches the follow-up route's limit for the suggested question being answered. */
+const MAX_REPLY_TO = 500;
 
 function UserBubble({ children }: { children: React.ReactNode }) {
   return (
@@ -81,7 +83,8 @@ export function FollowUpThread({
       const res = await fetch(`/api/diagnose/${diagnosisId}/followup`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ message }),
+        // The question goes separately, so the answer alone gets the full length limit.
+        body: JSON.stringify({ message: answer, ...(replyTo ? { replyTo: replyTo.slice(0, MAX_REPLY_TO) } : {}) }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok) {

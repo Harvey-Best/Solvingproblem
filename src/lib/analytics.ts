@@ -16,7 +16,8 @@ export type AnalyticsEvent =
   | "signup"
   | "trial_start"
   | "subscribe"
-  | "cancel";
+  | "cancel"
+  | "result_shared";
 
 export function track(event: AnalyticsEvent, properties?: Record<string, unknown>) {
   if (!posthog.__loaded) {

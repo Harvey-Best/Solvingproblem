@@ -21,7 +21,7 @@ function GoogleIcon() {
   );
 }
 
-export function LoginForm({ next, linkError }: { next: string; linkError: boolean }) {
+export function LoginForm({ next, linkError, googleEnabled }: { next: string; linkError: boolean; googleEnabled: boolean }) {
   const [emailState, sendAction, sending] = useActionState<LoginState, FormData>(sendMagicLink, {
     step: "email",
     error: linkError ? "That sign-in link expired or was already used. Send a new one." : undefined,
@@ -99,21 +99,25 @@ export function LoginForm({ next, linkError }: { next: string; linkError: boolea
 
   return (
     <div className="space-y-5">
-      <Button
-        type="button"
-        variant="outline"
-        size="lg"
-        className="w-full"
-        onClick={signInWithGoogle}
-        disabled={googleLoading || sending}
-      >
-        {googleLoading ? <Loader2 className="animate-spin" /> : <GoogleIcon />} Continue with Google
-      </Button>
-      {googleError && <p role="alert" className="text-sm text-destructive">{googleError}</p>}
+      {googleEnabled && (
+        <>
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="w-full"
+            onClick={signInWithGoogle}
+            disabled={googleLoading || sending}
+          >
+            {googleLoading ? <Loader2 className="animate-spin" /> : <GoogleIcon />} Continue with Google
+          </Button>
+          {googleError && <p role="alert" className="text-sm text-destructive">{googleError}</p>}
 
-      <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
-        <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
-      </div>
+          <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+            <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
+          </div>
+        </>
+      )}
 
       <form action={sendAction} className="space-y-3">
         <input type="hidden" name="next" value={next} />

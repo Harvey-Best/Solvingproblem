@@ -34,6 +34,10 @@ export async function SiteHeader() {
         </Link>
         <nav className="flex items-center gap-1">
           <IdentifyViewer userId={userId} />
+          {/* Phones get guides from the footer, so the header stays one row at 360px. */}
+          <Button asChild variant="ghost" size="sm" className={`${NAV_LINK} hidden sm:inline-flex`}>
+            <Link href="/guides">Guides</Link>
+          </Button>
           {userId ? (
             <>
               <Button asChild variant="ghost" size="sm" className={NAV_LINK}>

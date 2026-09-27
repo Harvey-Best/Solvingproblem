@@ -18,7 +18,7 @@ const bodySchema = z.object({
   message: z.string().trim().min(1).max(1000),
   // The suggested question being answered, if any. Sent separately so a long
   // answer to a long question isn't rejected for the combined length.
-  replyTo: z.string().trim().max(300).optional(),
+  replyTo: z.string().trim().max(500).optional(),
 });
 
 // Longer than the slowest run (maxDuration), so a crashed run frees the thread eventually.

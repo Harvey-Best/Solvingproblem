@@ -6,6 +6,7 @@ import { Download, Link2, Link2Off, Loader2, MoreHorizontal, Share2 } from "luci
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/analytics";
 
 /** A share link as the server hands it over: the page URL and the square card image. */
 export type ShareLinkState = { url: string; imageUrl: string };
@@ -86,6 +87,7 @@ export function ShareButton({
     try {
       await navigator.clipboard.writeText(url);
       toast.success("Link copied", { description: PRIVACY_NOTE });
+      track("result_shared", { method: "copy_link" });
     } catch {
       // Some browsers only allow copying straight from a tap: offer one.
       toast("Your link is ready", {
@@ -105,6 +107,7 @@ export function ShareButton({
       data.files = [file];
     }
     await navigator.share(data);
+    track("result_shared", { method: "share_sheet", with_image: Boolean(data.files) });
   }
 
   async function share() {
@@ -195,7 +198,11 @@ export function ShareButton({
                 <Link2 /> Copy link
               </DropdownMenu.Item>
               <DropdownMenu.Item asChild className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm outline-none data-highlighted:bg-accent [&_svg]:size-4">
-                <a href={link.imageUrl} download={imageFileName(title)}>
+                <a
+                  href={link.imageUrl}
+                  download={imageFileName(title)}
+                  onClick={() => track("result_shared", { method: "download_image" })}
+                >
                   <Download /> Download image
                 </a>
               </DropdownMenu.Item>
