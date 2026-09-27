@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { signOut } from "@/app/(site)/login/actions";
 import { JsonLd } from "@/components/json-ld";
 import { HouseCallTemplate } from "@/components/landing/house-call";
 import { Faq, GuidesTeaser, HowItWorks } from "@/components/landing/landing-sections";
@@ -42,16 +41,19 @@ async function LandingNav() {
           <Link href="/history" className={navLink}>
             History
           </Link>
-          <form action={signOut}>
-            <button type="submit" className={navLink}>
-              Sign out
-            </button>
-          </form>
+          <Link href="/account" className={navLink}>
+            Account
+          </Link>
         </>
       ) : (
-        <Link href="/login" className={navLink}>
-          Sign in
-        </Link>
+        <>
+          <Link href="/pricing" className={`${navLink} hidden sm:inline-block`}>
+            Pricing
+          </Link>
+          <Link href="/login" className={navLink}>
+            Sign in
+          </Link>
+        </>
       )}
     </nav>
   );

@@ -37,4 +37,4 @@ export function isIndexable(): boolean {
 }
 
 /** Paths that are per-user, transactional or internal. Never indexed. */
-export const PRIVATE_PATHS = ["/api/", "/auth/", "/d/", "/q/", "/history", "/login", "/dev/", "/templates"];
+export const PRIVATE_PATHS = ["/api/", "/auth/", "/d/", "/q/", "/history", "/account", "/billing/", "/login", "/dev/", "/templates"];

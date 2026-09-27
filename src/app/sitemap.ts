@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/"), changeFrequency: "weekly", priority: 1 },
     { url: absoluteUrl("/diagnose"), changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/quote"), changeFrequency: "monthly", priority: 0.7 },
+    { url: absoluteUrl("/pricing"), changeFrequency: "monthly", priority: 0.6 },
     { url: absoluteUrl("/guides"), lastModified: newestGuide, changeFrequency: "weekly", priority: 0.8 },
     ...GUIDES.map((g) => ({
       url: absoluteUrl(`/guides/${g.slug}`),

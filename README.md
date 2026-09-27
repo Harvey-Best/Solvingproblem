@@ -2,7 +2,7 @@
 
 Point your phone at a household problem, get a structured diagnosis: what it is, how urgent, DIY or pro, steps, parts with prices, a fair pro price range, and what to say to the pro.
 
-**Stack:** Next.js 16 (App Router, TypeScript) · Tailwind v4 · shadcn/ui · Supabase (auth, Postgres, Storage) · Anthropic API · Vercel. Stripe, Resend and PostHog land in later phases.
+**Stack:** Next.js 16 (App Router, TypeScript) · Tailwind v4 · shadcn/ui · Supabase (auth, Postgres, Storage) · Anthropic API · Stripe (Checkout, Customer Portal, webhooks) · Resend · Vercel (hosting + cron). PostHog lands in Phase 4.
 
 ## How it works
 
@@ -27,7 +27,21 @@ redirect /d/[id] ◄────────────────────
 - **Quote check.** `/quote` → `POST /api/quote-check` → `/q/[id]`. Photos of a contractor quote come back as line items, a checklist of what a solid quote includes (scope, materials, permit, cleanup, warranty, payment terms, timeline, license/insurance), red flags, a typical price range with where this quote lands, and questions to ask before signing. `src/lib/ai/quote-guard.ts` always flags deposits over 30% and missing license numbers, never lets the range collapse to one number, and keeps the above/within/below label consistent with the numbers (logged in `quote_checks.guard_flags`).
 - **History.** `/history` lists a signed-in user's diagnoses and quote checks with thumbnails.
 - **Anonymous first diagnosis.** `src/proxy.ts` gives every visitor an `hd_anon` cookie. Diagnoses are keyed to it and moved to the account on sign-in (`src/lib/claim.ts`).
-- **Free-use limits** (`src/lib/allowance.ts`): 1 free diagnosis and 1 free quote check per anonymous cookie, max 5 anonymous runs per IP per day, 25 runs/day for signed-in users, and 2 (anonymous) / 6 (signed-in) follow-ups per diagnosis. Stripe replaces the signed-in cap in Phase 3.
+- **Free-use limits** (`src/lib/allowance.ts`): 1 free diagnosis and 1 free quote check per anonymous cookie, max 5 anonymous runs per IP per day, 25 runs/day fair use for signed-in users, and 2 (anonymous) / 6 (signed-in) follow-ups per diagnosis.
+- **Paywall and trial** (`src/lib/access.ts`, `src/lib/billing.ts`):
+  - The first diagnosis is free with no account. The second requires an account, and creating one starts a 7-day free trial with no card (`users.trial_ends_at`, started by `onSignedIn` in `src/lib/onboarding.ts`).
+  - After the trial, new diagnoses, quote checks and follow-ups need a subscription: $9.99/month or $49/year (`src/lib/plans.ts`). History and past results stay readable.
+  - Stripe statuses `active`, `trialing` and `past_due` (while Stripe retries the card) keep access on.
+  - Subscribing during the trial with 48h+ left carries the rest of the trial into Stripe, so the first charge is when the free trial would have ended.
+  - The paywall only turns on once `STRIPE_SECRET_KEY` and both price ids are set.
+- **Stripe.**
+  - `/pricing` → Checkout (server action in `src/app/(site)/billing/actions.ts`) → `/billing/success`, which syncs the subscription right away. `/account` opens the Customer Portal to change plan, update the card, see invoices or cancel.
+  - `POST /api/stripe/webhook` verifies the signature, dedupes redeliveries in `stripe_events`, and mirrors subscription state into `subscriptions`, always re-fetching from Stripe so out-of-order events are harmless.
+- **Emails** (`src/lib/email/`, sent through Resend, each at most once via `email_log`):
+  - **Welcome** after the first sign-in.
+  - **Trial ends in 2 days** from a daily Vercel Cron (`vercel.json` → `/api/cron/trial-reminders`, protected by `CRON_SECRET`).
+  - **Receipt** on every paid invoice (`invoice.paid`).
+  - Without `RESEND_API_KEY`, emails are logged instead of sent.
 - **Strict output.** `src/lib/ai/schema.ts` is sent as a structured-output JSON schema and re-validated with zod. One retry on a bad parse; a friendly error after two failures (it doesn't count against the user).
 - **Safety.** The system prompt (`src/lib/ai/prompt.ts`) requires escalation for gas, sparking, water near electrical, sagging structure and CO. On top of that, `src/lib/ai/safety.ts` scans the homeowner's own words and forces "Stop and call a pro now" if the model under-called it. Every forced escalation is logged in `diagnoses.safety_overrides`.
 - **Quality log.** Every request writes a `diagnoses` row with the prompt version, the text sent (no image bytes), raw response, tokens, latency, attempts and any error.
@@ -70,8 +84,21 @@ Dev-only previews that need no keys:
 - `/dev/result?thread=1`: the result screen with a follow-up exchange.
 - `/dev/quote` and `/dev/quote-result`: the quote form and a sample quote review.
 - `/dev/history`: the history list with sample rows.
+- `/dev/billing?state=trial|expired|canceled|subscribed|canceling|pastdue`: trial status, paywall and account plan card.
+- `/dev/email/welcome`, `/dev/email/trial-ending`, `/dev/email/receipt` (add `?format=text` for the plain-text version).
 
-### 3. Deploy (Vercel)
+### 3. Stripe
+
+1. **Product and prices.** Create a product "Home Doctor" with two recurring prices, $9.99/month and $49/year. Put their ids in `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_YEARLY`.
+2. **Webhook.** Developers → Webhooks → add endpoint `https://<your-domain>/api/stripe/webhook` with these events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`. Put its signing secret in `STRIPE_WEBHOOK_SECRET`.
+3. **Customer Portal.** Settings → Billing → Customer portal: allow cancellations, payment method updates, invoice history, and switching between the two prices.
+4. **Local testing.** Run `stripe listen --forward-to localhost:3000/api/stripe/webhook` and use its `whsec_` secret. Test card `4242 4242 4242 4242`.
+
+### 4. Email (Resend)
+
+Verify your sending domain in Resend, then set `RESEND_API_KEY` and `EMAIL_FROM`. Set `CRON_SECRET` in Vercel too: the daily trial reminder cron is declared in `vercel.json`.
+
+### 5. Deploy (Vercel)
 
 Import the repo in Vercel and add the env vars from `.env.example` (set `NEXT_PUBLIC_SITE_URL` to the production URL, and update it when you add a custom domain: canonicals, the sitemap and `llms.txt` use it), then deploy.
 
@@ -85,7 +112,7 @@ A dashboard **Redeploy** rebuilds the same commit as the deployment you click it
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Route type generation + `tsc` |
-| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO) |
+| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO, billing, webhook, emails) |
 
 ## Quality review
 
@@ -107,5 +134,5 @@ from diagnoses where status = 'complete' group by 1, 2;
 
 - [x] **Phase 1:** scaffold, auth (magic link + code + Google), diagnose flow with the model, result screen
 - [x] **Phase 2:** quote check, history, follow-up threads
-- [ ] **Phase 3:** Stripe (trial, checkout, portal, webhooks), paywall, emails
+- [x] **Phase 3:** Stripe (trial, checkout, portal, webhooks), paywall, emails
 - [ ] **Phase 4:** mobile polish, loading states, share card, PostHog

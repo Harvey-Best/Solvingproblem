@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { signOut } from "@/app/(site)/login/actions";
 import { getViewer } from "@/lib/viewer";
 
 export function Logo() {
@@ -32,16 +31,19 @@ export async function SiteHeader() {
               <Button asChild variant="ghost" size="sm">
                 <Link href="/history">History</Link>
               </Button>
-              <form action={signOut}>
-                <Button type="submit" variant="ghost" size="sm">
-                  Sign out
-                </Button>
-              </form>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/account">Account</Link>
+              </Button>
             </>
           ) : (
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/login">Sign in</Link>
-            </Button>
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/pricing">Pricing</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/login">Sign in</Link>
+              </Button>
+            </>
           )}
         </nav>
       </div>

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { Paywall, TrialStatus } from "@/components/billing/access-ui";
 import { ModeTabs } from "@/components/mode-tabs";
 import { QuoteForm } from "@/components/quote/quote-form";
 import { checkAllowance } from "@/lib/allowance";
@@ -39,7 +40,10 @@ export default async function QuotePage() {
         We&apos;ll list what&apos;s in it, what&apos;s missing, any red flags, and whether the price is in a typical
         range.{!viewer.userId && " Your first quote check is free."}
       </p>
-      {!allowance.allowed ? (
+      <TrialStatus access={allowance.access} />
+      {!allowance.allowed && allowance.reason === "subscription_required" && allowance.access ? (
+        <Paywall access={allowance.access} kind="quote" />
+      ) : !allowance.allowed ? (
         <p className="mt-6 rounded-xl border bg-card p-4 text-sm">
           You&apos;ve hit today&apos;s limit. Please come back tomorrow.
         </p>

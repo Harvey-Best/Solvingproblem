@@ -53,6 +53,13 @@ export function QuoteForm() {
         router.push(`/q/${data.id}`);
         return;
       }
+      if (data.code === "subscription_required") {
+        // The trial ended in another tab; reloading shows the plans.
+        router.refresh();
+        setError(data.message);
+        setSubmitting(false);
+        return;
+      }
       if (data.code === "signup_required") {
         router.push("/login?reason=quote&next=/quote");
         return;
