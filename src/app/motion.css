@@ -1,0 +1,119 @@
+/*
+ * Shared motion (entrance and scroll animations) and illustration paint
+ * classes. Pure CSS, so content never depends on JS to become visible, and
+ * everything switches off under prefers-reduced-motion.
+ */
+
+@keyframes t-drip {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  15% { transform: translateY(0) scale(1); opacity: 1; }
+  70% { transform: translateY(34px) scale(1); opacity: 1; }
+  100% { transform: translateY(42px) scale(0.9); opacity: 0; }
+}
+@keyframes t-pulse {
+  0% { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+@keyframes t-float {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--r, 0deg)); }
+}
+@keyframes t-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-1.5px); }
+  75% { transform: translateX(1.5px); }
+}
+@keyframes t-flicker {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(1.15); }
+}
+@keyframes t-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes t-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes t-scan {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes t-swing {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(6deg); }
+  55% { transform: rotate(-4deg); }
+  80% { transform: rotate(2deg); }
+}
+@keyframes t-mark {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes t-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.t-drip {
+  animation: t-drip 1.8s cubic-bezier(0.5, 0, 0.8, 0.5) infinite;
+  transform-box: fill-box;
+  transform-origin: center top;
+}
+.t-pulse {
+  animation: t-pulse 1.8s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.t-float { animation: t-float 6s ease-in-out infinite; }
+.t-shake { animation: t-shake 0.22s linear infinite; }
+.t-flicker {
+  animation: t-flicker 0.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+.t-draw {
+  stroke-dasharray: var(--len, 400);
+  stroke-dashoffset: var(--len, 400);
+  animation: t-draw 1.1s 0.5s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+.t-rise {
+  opacity: 0;
+  animation: t-rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation-delay: var(--d, 0s);
+}
+.t-scan-line { animation: t-scan 2.6s ease-in-out infinite; }
+.t-swing { transform-origin: top center; }
+.t-swing:hover { animation: t-swing 0.9s ease-in-out; }
+.t-marquee { animation: t-marquee 28s linear infinite; }
+.t-mark {
+  transform-origin: left center;
+  animation: t-mark 0.8s 0.7s cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+/* Sections fade up as they scroll in, where the browser supports it. */
+@supports (animation-timeline: view()) {
+  .t-reveal {
+    animation: t-rise linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .t-drip, .t-pulse, .t-float, .t-shake, .t-flicker, .t-reveal,
+  .t-scan-line, .t-swing:hover, .t-marquee, .t-mark {
+    animation: none !important;
+  }
+  .t-draw { animation: none; stroke-dashoffset: 0; }
+  .t-rise { animation: none; opacity: 1; }
+}
+
+/* Illustration paint. Each template sets --ill-* on a wrapper. */
+.i-ink { stroke: var(--ill-ink, currentColor); }
+.i-fill-ink { fill: var(--ill-ink, currentColor); }
+.i-fill-paper { fill: var(--ill-paper, #fff); }
+.i-fill-soft { fill: var(--ill-soft, #ececec); }
+.i-fill-accent { fill: var(--ill-accent, #ff5a1f); }
+.i-stroke-accent { stroke: var(--ill-accent, #ff5a1f); }
+.i-stroke-paper { stroke: var(--ill-paper, #fff); }

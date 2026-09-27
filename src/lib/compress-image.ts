@@ -8,11 +8,11 @@ const MAX_MB = 1.4;
  * Re-encodes a phone photo as a JPEG under 1.5MB. Re-encoding through a canvas
  * also applies EXIF rotation and strips metadata (including GPS location).
  */
-export async function compressImage(file: File): Promise<File> {
+export async function compressImage(file: File, { quality = 0.85 }: { quality?: number } = {}): Promise<File> {
   const blob = await imageCompression(file, {
     maxSizeMB: MAX_MB,
     maxWidthOrHeight: MAX_EDGE,
-    initialQuality: 0.85,
+    initialQuality: quality,
     fileType: "image/jpeg",
     // The worker build loads the library from a CDN; main thread is fine for 1-3 photos.
     useWebWorker: false,

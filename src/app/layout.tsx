@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import { SITE, canonicalOrigin, isIndexable } from "@/lib/site";
 
 import "./globals.css";
+import "./motion.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,19 +17,47 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const fraunces = Fraunces({
+  variable: "--font-fraunces",
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "WONK", "opsz"],
+});
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(canonicalOrigin()),
   title: {
     default: "Home Doctor: know what's wrong in 30 seconds",
     template: "%s · Home Doctor",
   },
-  description:
-    "Point your phone at a household problem. Home Doctor tells you what it is, whether you can fix it yourself, what parts to buy, and what a pro should charge.",
-  applicationName: "Home Doctor",
+  description: SITE.shortDescription,
+  applicationName: SITE.name,
+  keywords: [
+    "home repair",
+    "diagnose household problems",
+    "home repair cost",
+    "DIY or call a pro",
+    "plumbing problem",
+    "electrical problem",
+    "contractor quote check",
+  ],
+  category: "home improvement",
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    locale: SITE.locale,
+    title: "Home Doctor: know what's wrong in 30 seconds",
+    description: SITE.shortDescription,
+  },
+  twitter: { card: "summary_large_image" },
+  robots: isIndexable()
+    ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
+    : { index: false, follow: false },
+  formatDetection: { telephone: false, address: false, email: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbfaf7",
+  themeColor: SITE.themeColor,
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -37,11 +65,9 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col font-sans">
-        <SiteHeader />
         {children}
-        <SiteFooter />
         <Toaster position="top-center" richColors />
       </body>
     </html>

@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { getAnthropic } from "@/lib/ai/client";
+import { modelOptions } from "@/lib/ai/client";
 import { runDiagnosis, type ImageInput } from "@/lib/ai/diagnose";
+import { logColumns } from "@/lib/ai/log-columns";
 import { DIAGNOSIS_PROMPT_VERSION } from "@/lib/ai/prompt";
-import { checkDiagnosisAllowance } from "@/lib/allowance";
+import { checkAllowance } from "@/lib/allowance";
 import { CATEGORY_IDS } from "@/lib/diagnosis-meta";
 import { env } from "@/lib/env";
-import { mediaTypeForPath, pathBelongsTo } from "@/lib/storage-paths";
-import { createAdminClient, UPLOADS_BUCKET } from "@/lib/supabase/admin";
+import { loadImages } from "@/lib/images";
+import { pathBelongsTo } from "@/lib/storage-paths";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getAttribution, getIpHash, getViewerForWrite } from "@/lib/viewer";
 
 // Model calls usually take 15-40s; leave room for one retry.
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
   }
 
   const ipHash = viewer.userId ? null : await getIpHash();
-  const allowance = await checkDiagnosisAllowance(viewer, ipHash);
+  const allowance = await checkAllowance("diagnosis", viewer, ipHash);
   if (!allowance.allowed) {
     return allowance.reason === "signup_required"
       ? errorResponse(401, "signup_required", "Create a free account to run another diagnosis.")
@@ -75,39 +77,14 @@ export async function POST(request: Request) {
 
   let images: ImageInput[];
   try {
-    images = await Promise.all(
-      imagePaths.map(async (path) => {
-        const { data, error } = await admin.storage.from(UPLOADS_BUCKET).download(path);
-        if (error || !data) throw new Error(`download ${path}: ${error?.message ?? "no data"}`);
-        const base64 = Buffer.from(await data.arrayBuffer()).toString("base64");
-        return { mediaType: mediaTypeForPath(path), base64 };
-      })
-    );
+    images = await loadImages(imagePaths);
   } catch (err) {
     await fail((err as Error).message);
     return errorResponse(400, "upload_missing", "One of your photos didn't finish uploading. Please add it again.");
   }
 
-  const run = await runDiagnosis(
-    { images, description, category },
-    {
-      client: env.aiMock ? { messages: null as never } : getAnthropic(),
-      model: env.anthropicModel,
-      effort: env.anthropicEffort,
-      mock: env.aiMock,
-    }
-  );
-
-  const log = {
-    model: run.model,
-    prompt_version: run.promptVersion,
-    request_json: run.request,
-    raw_response: run.rawResponse,
-    attempts: run.attempts,
-    input_tokens: run.inputTokens,
-    output_tokens: run.outputTokens,
-    latency_ms: run.latencyMs,
-  };
+  const run = await runDiagnosis({ images, description, category }, modelOptions());
+  const log = { ...logColumns(run), request_json: run.request };
 
   if (!run.ok) {
     console.error("diagnosis failed", { id: row.id, kind: run.errorKind, error: run.error });

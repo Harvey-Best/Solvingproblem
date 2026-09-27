@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it, vi } from "vitest";
 
-import { parseDiagnosisText, runDiagnosis, supportsAdaptiveThinking } from "@/lib/ai/diagnose";
+import { buildDiagnosisMessages, parseDiagnosisText, runDiagnosis, supportsAdaptiveThinking } from "@/lib/ai/diagnose";
 import { MOCK_DIAGNOSIS } from "@/lib/ai/mock";
 
 function message(text: string, stop_reason: Anthropic.Message["stop_reason"] = "end_turn") {
@@ -140,5 +140,59 @@ describe("supportsAdaptiveThinking", () => {
     ["claude-sonnet-4-5", false],
   ])("%s -> %s", (model, expected) => {
     expect(supportsAdaptiveThinking(model)).toBe(expected);
+  });
+});
+
+describe("follow-ups", () => {
+  const history = {
+    original: MOCK_DIAGNOSIS,
+    turns: [{ answer: "It drips from the tip of the spout.", result: { ...MOCK_DIAGNOSIS, confidence: "high" as const } }],
+  };
+
+  it("replays the thread as alternating turns with cache breakpoints on the first and newest user turns", () => {
+    const messages = buildDiagnosisMessages({ ...input, history, newAnswer: "It's a Moen faucet." });
+    expect(messages.map((m) => m.role)).toEqual(["user", "assistant", "user", "assistant", "user"]);
+
+    const first = messages[0].content as Anthropic.ContentBlockParam[];
+    expect(first.map((b) => b.type)).toEqual(["image", "text"]);
+    expect((first[1] as Anthropic.TextBlockParam).cache_control).toEqual({ type: "ephemeral" });
+
+    const last = messages[4].content as Anthropic.TextBlockParam[];
+    expect(last[0].text).toContain("It's a Moen faucet.");
+    expect(last[0].cache_control).toEqual({ type: "ephemeral" });
+
+    // Earlier answers are replayed as plain text so the cached prefix stays stable.
+    expect(messages[2].content).toContain("It drips from the tip of the spout.");
+    expect(JSON.parse(messages[1].content as string).title).toBe(MOCK_DIAGNOSIS.title);
+  });
+
+  it("sends only the photo turn for a first diagnosis", () => {
+    expect(buildDiagnosisMessages(input)).toHaveLength(1);
+  });
+
+  it("applies the safety guard to answers given in follow-ups", async () => {
+    const { client } = fakeClient(message(JSON.stringify({ ...MOCK_DIAGNOSIS, what_changed: "Nothing new." })));
+    const run = await runDiagnosis({ ...input, history, newAnswer: "Also, I smell gas near the stove." }, { client, ...opts });
+    expect(run.ok).toBe(true);
+    if (run.ok) {
+      expect(run.diagnosis.severity).toBe("call_pro_now");
+      expect(run.overrides).toEqual(["gas"]);
+      expect(run.diagnosis.what_changed).toBe("Nothing new.");
+    }
+  });
+
+  it("clears what_changed on a first diagnosis", async () => {
+    const { client } = fakeClient(message(JSON.stringify({ ...MOCK_DIAGNOSIS, what_changed: "stray text" })));
+    const run = await runDiagnosis(input, { client, ...opts });
+    if (run.ok) expect(run.diagnosis.what_changed).toBe("");
+  });
+
+  it("counts cached prompt tokens", async () => {
+    const cachedMessage = message(JSON.stringify(MOCK_DIAGNOSIS));
+    Object.assign(cachedMessage.usage, { cache_read_input_tokens: 5000, cache_creation_input_tokens: 0 });
+    const { client } = fakeClient(cachedMessage);
+    const run = await runDiagnosis({ ...input, history, newAnswer: "Moen" }, { client, ...opts });
+    expect(run.cacheReadTokens).toBe(5000);
+    expect(run.inputTokens).toBe(6000);
   });
 });

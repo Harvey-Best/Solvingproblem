@@ -58,4 +58,15 @@ export const MOCK_DIAGNOSIS: Diagnosis = {
     "Does the drip come from the tip of the spout or from around the handle?",
     "Do you know the faucet brand? It's usually printed on the base or handle.",
   ],
+  what_changed: "",
+};
+
+/** Canned follow-up reply for AI_MOCK=1. */
+export const MOCK_FOLLOW_UP: Diagnosis = {
+  ...MOCK_DIAGNOSIS,
+  confidence: "high",
+  alternative_causes: MOCK_DIAGNOSIS.alternative_causes.slice(1),
+  follow_up_questions: [],
+  what_changed:
+    "A drip from the tip of the spout rules out the O-rings, so I'm now confident it's the cartridge.",
 };

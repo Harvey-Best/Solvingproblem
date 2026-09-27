@@ -2,6 +2,7 @@ import "server-only";
 
 import type { Diagnosis } from "@/lib/ai/schema";
 import { createAdminClient, UPLOADS_BUCKET } from "@/lib/supabase/admin";
+import type { ThreadMessage } from "@/lib/thread";
 import { isUuid } from "@/lib/utils";
 import type { Viewer } from "@/lib/viewer";
 
@@ -49,4 +50,16 @@ export async function signImageUrls(paths: string[], expiresIn = 60 * 60): Promi
     return [];
   }
   return data.map((d) => d.signedUrl).filter((u): u is string => Boolean(u));
+}
+
+export async function getThread(diagnosisId: string): Promise<ThreadMessage[]> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("diagnosis_messages")
+    .select("id, role, content, result_json, error, created_at")
+    .eq("diagnosis_id", diagnosisId)
+    .order("created_at", { ascending: true })
+    .returns<ThreadMessage[]>();
+  if (error) throw error;
+  return data ?? [];
 }

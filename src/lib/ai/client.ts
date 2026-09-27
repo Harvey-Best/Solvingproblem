@@ -2,6 +2,8 @@ import "server-only";
 
 import Anthropic from "@anthropic-ai/sdk";
 
+import { env } from "@/lib/env";
+
 let client: Anthropic | null = null;
 
 export function getAnthropic() {
@@ -18,4 +20,14 @@ export function getAnthropic() {
     });
   }
   return client;
+}
+
+/** Model settings from env; AI_MOCK=1 swaps the API for canned results. */
+export function modelOptions() {
+  return {
+    client: env.aiMock ? ({ messages: null } as never) : getAnthropic(),
+    model: env.anthropicModel,
+    effort: env.anthropicEffort,
+    mock: env.aiMock,
+  };
 }
