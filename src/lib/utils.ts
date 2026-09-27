@@ -24,7 +24,6 @@ const SAFE_BASE = "https://home-doctor.invalid";
  * redirect to is exactly what we checked.
  */
 export function safeNextPath(next: string | null | undefined, fallback = "/") {
-  // eslint-disable-next-line no-control-regex
   if (!next || !next.startsWith("/") || /[\u0000-\u001f\u007f\\]/.test(next)) return fallback;
   let url: URL;
   try {

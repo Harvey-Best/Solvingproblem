@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { Camera, Save } from "lucide-react";
 
 import { DiagnosisResult } from "@/components/result/diagnosis-result";
+import { ShareButton } from "@/components/share/share-button";
 import { FollowUpThread } from "@/components/thread/follow-up-thread";
 import { Button } from "@/components/ui/button";
 import { FOLLOW_UPS_PER_DIAGNOSIS } from "@/lib/allowance";
 import { accessAllowsPaidFeatures, getAccess } from "@/lib/billing";
 import { getDiagnosisForViewer, getThread, signImageUrls } from "@/lib/diagnoses";
+import { getShareId, shareLink } from "@/lib/share";
 import { latestDiagnosis, successfulTurns, toExchanges } from "@/lib/thread";
 import { getViewer } from "@/lib/viewer";
 
@@ -41,7 +43,11 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
     );
   }
 
-  const [imageUrls, thread] = await Promise.all([signImageUrls(record.image_paths), getThread(record.id)]);
+  const [imageUrls, thread, shareId] = await Promise.all([
+    signImageUrls(record.image_paths),
+    getThread(record.id),
+    getShareId(record.id),
+  ]);
   const exchanges = toExchanges(thread);
   const turns = successfulTurns(exchanges);
   const current = latestDiagnosis(record.result_json, exchanges);
@@ -50,6 +56,14 @@ export default async function DiagnosisPage(props: PageProps<"/d/[id]">) {
 
   return (
     <main id="top" className="mx-auto w-full max-w-2xl flex-1 scroll-mt-20 px-4 py-6">
+      <div className="mb-4 flex justify-end">
+        <ShareButton
+          diagnosisId={record.id}
+          title={current.title}
+          initialLink={shareId ? shareLink(shareId) : null}
+        />
+      </div>
+
       <DiagnosisResult
         diagnosis={current}
         imageUrls={imageUrls}

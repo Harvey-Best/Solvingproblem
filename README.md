@@ -26,6 +26,7 @@ redirect /d/[id] ◄────────────────────
 - **Follow-up threads.** Under each result, the homeowner answers the model's questions (or adds details). `POST /api/diagnose/[id]/followup` replays the whole conversation, re-runs the diagnosis, and stores both sides in `diagnosis_messages` (failures included). The photo turn carries a prompt-cache breakpoint, so follow-ups re-read the images at cache prices. The result page always shows the latest version.
 - **Quote check.** `/quote` → `POST /api/quote-check` → `/q/[id]`. Photos of a contractor quote come back as line items, a checklist of what a solid quote includes (scope, materials, permit, cleanup, warranty, payment terms, timeline, license/insurance), red flags, a typical price range with where this quote lands, and questions to ask before signing. `src/lib/ai/quote-guard.ts` always flags deposits over 30% and missing license numbers, never lets the range collapse to one number, and keeps the above/within/below label consistent with the numbers (logged in `quote_checks.guard_flags`).
 - **History.** `/history` lists a signed-in user's diagnoses and quote checks with thumbnails.
+- **Sharing.** The Share button on a result (`POST /api/diagnose/[id]/share`, owner only) makes an unguessable link (`/s/<id>`, 16 random bytes) and opens the phone's share sheet with a square card image attached, or copies the link on desktop. The public page and the cards (`/og/share/<id>`, wide 1200x630 for link previews, `?format=square` 1080x1080 for stories) show only a safe summary of the latest version: title, severity, DIY verdict and time, likely cause, pro price, parts total and hazard types (`toPublicDiagnosis` in `src/lib/share.ts`). Never photos, the homeowner's words, follow-ups or who they are. The page is `noindex` but not blocked in `robots.txt`, so link previews work. "Stop sharing" clears `diagnoses.share_id`: the page 404s at once and the cached cards within 5 minutes.
 - **Anonymous first diagnosis.** `src/proxy.ts` gives every visitor an `hd_anon` cookie. Diagnoses are keyed to it and moved to the account on sign-in (`src/lib/claim.ts`).
 - **Free-use limits** (`src/lib/allowance.ts`): 1 free diagnosis and 1 free quote check per anonymous cookie, max 5 anonymous runs per IP per day, 25 runs/day fair use for signed-in users, and 2 (anonymous) / 6 (signed-in) follow-ups per diagnosis.
 - **Paywall and trial** (`src/lib/access.ts`, `src/lib/billing.ts`):
@@ -88,6 +89,8 @@ Dev-only previews that need no keys:
 - `/dev/result?thread=1`: the result screen with a follow-up exchange.
 - `/dev/quote` and `/dev/quote-result`: the quote form and a sample quote review.
 - `/dev/history`: the history list with sample rows.
+- `/dev/share`: the public share page (add `?text=I+smell+gas` for the safety version). `/dev/share?view=owner`: the share button on the result page, before and after sharing.
+- `/dev/share/card` and `/dev/share/card?format=square`: the share images (same `?text=` and `?title=` options).
 - `/dev/billing?state=trial|expired|canceled|subscribed|canceling|pastdue`: trial status, paywall and account plan card.
 - `/dev/email/welcome`, `/dev/email/trial-ending`, `/dev/email/receipt` (add `?format=text` for the plain-text version).
 
@@ -116,7 +119,7 @@ A dashboard **Redeploy** rebuilds the same commit as the deployment you click it
 | `npm run build` | Production build |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Route type generation + `tsc` |
-| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO, billing, webhook, emails, analytics) |
+| `npm test` | Unit tests (safety guard, retry logic, path ownership, UTM, quote guard, threads, SEO, billing, webhook, emails, analytics, sharing) |
 
 ## Quality review
 
