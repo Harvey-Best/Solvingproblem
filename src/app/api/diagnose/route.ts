@@ -5,7 +5,7 @@ import { modelOptions } from "@/lib/ai/client";
 import { runDiagnosis, type ImageInput } from "@/lib/ai/diagnose";
 import { logColumns } from "@/lib/ai/log-columns";
 import { DIAGNOSIS_PROMPT_VERSION } from "@/lib/ai/prompt";
-import { DENY_RESPONSES, checkAllowance } from "@/lib/allowance";
+import { DENY_RESPONSES, reserveRun } from "@/lib/allowance";
 import { CATEGORY_IDS } from "@/lib/diagnosis-meta";
 import { env } from "@/lib/env";
 import { loadImages } from "@/lib/images";
@@ -42,37 +42,34 @@ export async function POST(request: Request) {
   }
 
   const ipHash = viewer.userId ? null : await getIpHash();
-  const allowance = await checkAllowance("diagnosis", viewer, ipHash);
+  // Counts and reserves the pending row atomically; we fill in the rest below.
+  const allowance = await reserveRun("diagnosis", viewer, ipHash);
   if (!allowance.allowed) {
     const deny = DENY_RESPONSES.diagnosis[allowance.reason];
     return errorResponse(deny.status, allowance.reason, deny.message);
   }
 
   const admin = createAdminClient();
-  const { data: row, error: insertError } = await admin
+  const row = { id: allowance.id };
+  const { error: fillError } = await admin
     .from("diagnoses")
-    .insert({
-      user_id: viewer.userId,
-      anon_id: viewer.anonId,
-      ip_hash: ipHash,
+    .update({
       category,
       description: description.trim() || null,
       image_paths: imagePaths,
-      status: "pending",
       model: env.aiMock ? "mock" : env.anthropicModel,
       prompt_version: DIAGNOSIS_PROMPT_VERSION,
       utm: viewer.userId ? null : await getAttribution(),
     })
-    .select("id")
-    .single();
-  if (insertError || !row) {
-    console.error("diagnosis insert failed", insertError);
-    return errorResponse(500, "server_error", FRIENDLY_FAILURE);
-  }
-
+    .eq("id", row.id);
   const fail = async (error: string, extra: Record<string, unknown> = {}) => {
     await admin.from("diagnoses").update({ status: "failed", error, ...extra }).eq("id", row.id);
   };
+  if (fillError) {
+    console.error("diagnosis save failed", fillError);
+    await fail(fillError.message);
+    return errorResponse(500, "server_error", FRIENDLY_FAILURE);
+  }
 
   let images: ImageInput[];
   try {

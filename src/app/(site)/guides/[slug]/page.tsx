@@ -54,7 +54,12 @@ export default async function GuidePage(props: PageProps<"/guides/[slug]">) {
   const url = absoluteUrl(`/guides/${guide.slug}`);
   const severity = SEVERITY_META[guide.severity];
   const verdict = DIY_VERDICT_META[guide.verdict];
-  const related = GUIDES.filter((g) => g.slug !== guide.slug).slice(0, 3);
+  // Same trade first, then the rest, so each guide links somewhere different.
+  const others = GUIDES.filter((g) => g.slug !== guide.slug);
+  const related = [
+    ...others.filter((g) => g.category === guide.category),
+    ...others.filter((g) => g.category !== guide.category),
+  ].slice(0, 3);
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 pb-16 pt-5">
@@ -192,18 +197,18 @@ export default async function GuidePage(props: PageProps<"/guides/[slug]">) {
         </Section>
 
         <Section id="costs" icon={ReceiptText} title="What it costs">
-          <div className="overflow-hidden rounded-2xl border bg-card">
+          <div className="overflow-x-auto rounded-2xl border bg-card">
             <table className="w-full text-left text-[15px]">
               <caption className="sr-only">Typical costs to fix: {guide.symptom.toLowerCase()}</caption>
               <thead className="bg-muted/70 text-xs uppercase tracking-wide text-muted-foreground">
                 <tr>
-                  <th scope="col" className="px-4 py-2.5 font-semibold">
+                  <th scope="col" className="px-3 py-2.5 font-semibold sm:px-4">
                     Job
                   </th>
                   <th scope="col" className="px-3 py-2.5 font-semibold">
                     DIY parts
                   </th>
-                  <th scope="col" className="px-4 py-2.5 font-semibold">
+                  <th scope="col" className="px-3 py-2.5 font-semibold sm:px-4">
                     Pro, installed
                   </th>
                 </tr>
@@ -211,11 +216,12 @@ export default async function GuidePage(props: PageProps<"/guides/[slug]">) {
               <tbody className="divide-y">
                 {guide.costs.map((row) => (
                   <tr key={row.job}>
-                    <th scope="row" className="px-4 py-3 font-medium">
+                    <th scope="row" className="px-3 py-3 font-medium sm:px-4">
                       {row.job}
                     </th>
                     <td className="px-3 py-3 text-muted-foreground">{row.diy}</td>
-                    <td className="whitespace-nowrap px-4 py-3 font-semibold">{row.pro}</td>
+                    {/* Wide ranges wrap after the dash on phones instead of clipping. */}
+                    <td className="min-w-[5.5rem] px-3 py-3 font-semibold sm:whitespace-nowrap sm:px-4">{row.pro}</td>
                   </tr>
                 ))}
               </tbody>

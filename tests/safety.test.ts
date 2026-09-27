@@ -21,6 +21,12 @@ describe("detectTextHazards", () => {
     ["water leaking into the electrical panel", "water_near_electrical"],
     ["the ceiling is sagging after the leak upstairs", "structural"],
     ["basement wall is bowing inward", "structural"],
+    // Exemptions only apply to the sentence and pattern they were written for.
+    ["The outlet behind the stove is sparking and smells like burning plastic", "electrical"],
+    ["Kitchen outlet next to the range stopped working.\nNow it's sparking when I plug things in", "electrical"],
+    ["The stove clicks. Also the burning smell is coming from the outlet", "electrical"],
+    ["It's not chirping, the carbon monoxide alarm is going off nonstop and we have headaches", "carbon_monoxide"],
+    ["The CO detector chirped once. Now we all have headaches", "carbon_monoxide"],
   ])("flags %j as %s", (text, hazard) => {
     expect(detectTextHazards(text)).toContain(hazard);
   });
@@ -31,6 +37,7 @@ describe("detectTextHazards", () => {
     "the CO detector keeps chirping every minute",
     "smoke detector chirping",
     "my stove igniter keeps sparking and clicking",
+    "The range was installed last year. The burner igniter keeps sparking",
     "lawn mower won't start, maybe the spark plug",
     "burning smell the first time the furnace turns on this fall",
     "the gutter is sagging at one end",
