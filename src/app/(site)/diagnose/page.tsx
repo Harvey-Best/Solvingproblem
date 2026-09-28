@@ -2,12 +2,16 @@ import { redirect } from "next/navigation";
 
 import { Paywall, TrialStatus } from "@/components/billing/access-ui";
 import { DiagnoseForm } from "@/components/diagnose/diagnose-form";
+import { JsonLd } from "@/components/json-ld";
 import { ModeTabs } from "@/components/mode-tabs";
+import { PageFaq } from "@/components/page-faq";
 import { TrackOnMount } from "@/components/track-on-mount";
 import { checkAllowance } from "@/lib/allowance";
 import { CATEGORY_IDS } from "@/lib/diagnosis-meta";
 import { isSupabaseConfigured } from "@/lib/env";
-import { pageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, faqPageJsonLd, graph, pageMetadata } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
+import { DIAGNOSE_FAQS } from "@/lib/tool-faqs";
 import { getIpHash, getViewer } from "@/lib/viewer";
 
 export const metadata = pageMetadata({
@@ -42,6 +46,15 @@ export default async function DiagnosePage(props: PageProps<"/diagnose">) {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+      <JsonLd
+        data={graph(
+          faqPageJsonLd(DIAGNOSE_FAQS, absoluteUrl("/diagnose")),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Diagnose a problem", path: "/diagnose" },
+          ])
+        )}
+      />
       <TrackOnMount event="diagnose_start" properties={{ signed_in: Boolean(viewer.userId) }} />
       <ModeTabs active="diagnose" />
       <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">What&apos;s the problem?</h1>
@@ -62,6 +75,7 @@ export default async function DiagnosePage(props: PageProps<"/diagnose">) {
           <DiagnoseForm initialCategory={initialCategory} />
         </div>
       )}
+      <PageFaq id="diagnose-faq" faqs={DIAGNOSE_FAQS} />
     </main>
   );
 }

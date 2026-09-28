@@ -128,7 +128,7 @@ export const GUIDES: Guide[] = [
   {
     slug: "toilet-keeps-running",
     title: "Toilet keeps running: find the cause and fix it",
-    metaTitle: "Toilet Keeps Running? The 4 Usual Causes and How to Fix Each",
+    metaTitle: "Toilet Keeps Running? The 5 Usual Causes and How to Fix Each",
     metaDescription:
       "A running toilet is almost always the flapper, the fill valve or the chain. How to tell which in five minutes, fix it for under $30, and when to call a plumber.",
     symptom: "Toilet keeps running",
@@ -291,9 +291,9 @@ export const GUIDES: Guide[] = [
   {
     slug: "ac-not-cooling",
     title: "AC running but not cooling: what to check before you call",
-    metaTitle: "AC Running but Not Cooling? 6 Checks and Repair Costs",
+    metaTitle: "AC Running but Not Cooling? 5 Checks and Repair Costs",
     metaDescription:
-      "AC running but blowing warm air? The checks you can do yourself (filter, thermostat, breaker, outdoor coil, ice), the repairs that need a tech, and typical costs.",
+      "AC blowing warm air? The checks you can do yourself (filter, thermostat, breaker, outdoor coil, ice), the repairs that need a tech, and typical costs.",
     symptom: "AC not cooling",
     category: "hvac",
     reviewed: "2026-09-27",
@@ -473,7 +473,7 @@ export const GUIDES: Guide[] = [
     title: "Cracks in drywall: which are normal and which aren't",
     metaTitle: "Drywall Cracks: Normal Settling or Structural? How to Tell",
     metaDescription:
-      "Most drywall cracks are cosmetic settling you can patch for under $30. The signs that point to a structural problem, how to monitor a crack, and what repairs cost.",
+      "Most drywall cracks are cosmetic settling you can patch for under $30. Signs that point to a structural problem, how to monitor a crack, and what repairs cost.",
     symptom: "Cracks in drywall",
     category: "walls_paint",
     reviewed: "2026-09-27",
@@ -555,7 +555,7 @@ export const GUIDES: Guide[] = [
     title: "No hot water: what to check on a gas or electric water heater",
     metaTitle: "No Hot Water? Gas and Electric Water Heater Fixes and Costs",
     metaDescription:
-      "No hot water? Check the pilot on a gas heater, or the breaker and reset button on an electric one. The parts that usually fail, what's safe to try, and repair costs.",
+      "No hot water? Check the pilot on a gas heater, or the breaker and reset button on an electric one. What usually fails, what's safe to try, and repair costs.",
     symptom: "No hot water",
     category: "plumbing",
     reviewed: "2026-09-27",
@@ -657,7 +657,7 @@ export const GUIDES: Guide[] = [
     title: "Clogged drain: how to clear a sink, tub or shower",
     metaTitle: "Clogged Drain? How to Clear a Sink, Tub or Shower Drain",
     metaDescription:
-      "Most sink, tub and shower clogs are hair, soap or grease near the drain and clear with a plunger or hand snake. Signs it's the main line, and what a plumber charges.",
+      "Most sink, tub and shower clogs are hair, soap or grease near the drain and clear with a plunger or snake. Signs it's the main line, and what a plumber charges.",
     symptom: "Clogged drain",
     category: "plumbing",
     reviewed: "2026-09-27",
@@ -752,7 +752,7 @@ export const GUIDES: Guide[] = [
     title: "Low water pressure: one faucet or the whole house",
     metaTitle: "Low Water Pressure? Causes for One Faucet or the Whole House",
     metaDescription:
-      "Low pressure at one faucet is usually a clogged aerator. Low pressure everywhere points to a valve, pressure regulator, leak or the supply. How to tell, and costs.",
+      "Low pressure at one faucet is usually a clogged aerator. Everywhere, it's a valve, pressure regulator, leak or the supply. How to tell, and what it costs.",
     symptom: "Low water pressure",
     category: "plumbing",
     reviewed: "2026-09-27",
@@ -853,7 +853,7 @@ export const GUIDES: Guide[] = [
     title: "Garbage disposal not working: how to reset, unjam or replace it",
     metaTitle: "Garbage Disposal Not Working? How to Reset, Unjam or Replace It",
     metaDescription:
-      "Garbage disposal humming, dead, jammed or leaking? How to reset it and free a jam safely with a hex key, when a leak means replacing it, and what a plumber charges.",
+      "Garbage disposal humming, jammed or leaking? How to reset it and free a jam safely with a hex key, when a leak means replacing it, and what a plumber charges.",
     symptom: "Garbage disposal not working",
     category: "plumbing",
     reviewed: "2026-09-27",
@@ -1048,7 +1048,7 @@ export const GUIDES: Guide[] = [
     title: "Smoke or CO detector chirping: why, and how to make it stop",
     metaTitle: "Smoke or CO Detector Chirping? Why It Happens and How to Stop It",
     metaDescription:
-      "One chirp every 30 to 60 seconds usually means a low battery or an alarm at the end of its life. How to stop it, tell a chirp from an alarm, and what to do for CO.",
+      "A chirp every 30 to 60 seconds usually means a low battery or a worn-out alarm. How to stop it, tell a chirp from a real alarm, and what to do for CO.",
     symptom: "Smoke detector chirping",
     category: "electrical",
     reviewed: "2026-09-27",

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import type { Guide } from "@/lib/guides";
 import { PLANS, TRIAL_DAYS } from "@/lib/plans";
-import { SITE, absoluteUrl } from "@/lib/site";
+import { SITE, absoluteUrl, contactEmail } from "@/lib/site";
 
 /** The site-wide share image (src/app/opengraph-image.tsx). */
 export const DEFAULT_OG_IMAGE = {
@@ -34,6 +34,8 @@ export function pageMetadata({
   image?: { url: string; alt: string };
 }): Metadata {
   const images = [{ ...image, width: 1200, height: 630 }];
+  // Shares and AI answers show this without the <title> suffix, so carry the brand.
+  const socialTitle = absoluteTitle || title.includes(SITE.name) ? title : `${title} · ${SITE.name}`;
   return {
     title: absoluteTitle ? { absolute: title } : title,
     description,
@@ -43,11 +45,11 @@ export function pageMetadata({
       siteName: SITE.name,
       locale: SITE.locale,
       url: path,
-      title,
+      title: socialTitle,
       description,
       images,
     },
-    twitter: { card: "summary_large_image", title, description, images },
+    twitter: { card: "summary_large_image", title: socialTitle, description, images },
   };
 }
 
@@ -100,6 +102,9 @@ export function organizationJsonLd(): JsonLd {
     url: absoluteUrl("/"),
     logo: absoluteUrl("/icons/icon-512.png"),
     description: SITE.description,
+    ...(contactEmail()
+      ? { contactPoint: { "@type": "ContactPoint", contactType: "customer support", email: contactEmail(), availableLanguage: "en" } }
+      : {}),
   };
 }
 

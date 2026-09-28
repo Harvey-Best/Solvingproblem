@@ -16,7 +16,7 @@ import { getViewer } from "@/lib/viewer";
 
 const DESCRIPTION = `Your first diagnosis is free, no account needed. Then a ${TRIAL_DAYS}-day free trial with no card, and ${PLANS.monthly.priceLabel} or ${PLANS.yearly.priceLabel} after that.`;
 
-export const metadata = pageMetadata({ title: "Pricing", description: DESCRIPTION, path: "/pricing" });
+export const metadata = pageMetadata({ title: "Pricing and free trial", description: DESCRIPTION, path: "/pricing" });
 
 const STEPS = [
   { title: "First diagnosis free", body: "No account, no card. Snap the problem and get the full answer." },

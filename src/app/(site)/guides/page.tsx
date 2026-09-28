@@ -11,7 +11,7 @@ import { absoluteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const DESCRIPTION =
-  "Plain-English guides to common household problems: what usually causes them, how urgent they are, what you can safely try, what repairs cost, and when to call a pro.";
+  "Plain-English guides to common household problems: what causes them, how urgent they are, what you can safely try, what repairs cost, and when to call a pro.";
 
 export const metadata = pageMetadata({ title: "Home repair guides", description: DESCRIPTION, path: "/guides" });
 

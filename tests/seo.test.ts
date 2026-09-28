@@ -58,13 +58,24 @@ describe("sitemap", () => {
 });
 
 describe("guides", () => {
+  it("never promise a different number of causes or checks than they list", () => {
+    for (const g of GUIDES) {
+      const causes = g.metaTitle.match(/(\d+) (?:Usual )?Causes/i);
+      if (causes) expect(Number(causes[1]), g.slug).toBe(g.causes.length);
+      const checks = g.metaTitle.match(/(\d+) Checks/i);
+      if (checks) expect(Number(checks[1]), g.slug).toBe(g.tryFirst.length);
+    }
+  });
+
+
   it("have unique slugs and search-friendly titles and descriptions", () => {
     expect(new Set(GUIDES.map((g) => g.slug)).size).toBe(GUIDES.length);
     for (const g of GUIDES) {
       expect(g.slug).toMatch(/^[a-z0-9-]+$/);
       expect(g.metaTitle.length, g.slug).toBeLessThanOrEqual(65);
       expect(g.metaDescription.length, g.slug).toBeGreaterThan(80);
-      expect(g.metaDescription.length, g.slug).toBeLessThanOrEqual(165);
+      // Google cuts snippets off at about 160 characters.
+      expect(g.metaDescription.length, g.slug).toBeLessThanOrEqual(160);
       expect(g.reviewed).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(g.causes.length).toBeGreaterThanOrEqual(3);
       expect(g.costs.length).toBeGreaterThanOrEqual(3);
@@ -82,7 +93,11 @@ describe("metadata and structured data", () => {
   it("sets a canonical and restates Open Graph on each page", () => {
     const m = pageMetadata({ title: "Guides", description: "d", path: "/guides" });
     expect(m.alternates?.canonical).toBe("/guides");
-    expect(m.openGraph).toMatchObject({ url: "/guides", siteName: "Home Doctor", title: "Guides" });
+    // Shares show the brand even though the <title> template adds it separately.
+    expect(m.openGraph).toMatchObject({ url: "/guides", siteName: "Home Doctor", title: "Guides · Home Doctor" });
+    expect(m.twitter).toMatchObject({ title: "Guides · Home Doctor" });
+    const home = pageMetadata({ title: "Home Doctor: know what's wrong", description: "d", path: "/", absoluteTitle: true });
+    expect(home.openGraph).toMatchObject({ title: "Home Doctor: know what's wrong" });
   });
 
   it("builds a FAQPage from the landing questions", () => {
