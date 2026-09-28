@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
 
 import { sendMagicLink, verifyEmailCode, type LoginState } from "./actions";
+import { GoogleSignInButton } from "./google-button";
 
 function GoogleIcon() {
   return (
@@ -21,7 +22,9 @@ function GoogleIcon() {
   );
 }
 
-export function LoginForm({ next, linkError, googleEnabled }: { next: string; linkError: boolean; googleEnabled: boolean }) {
+export type GoogleSignIn = { enabled: boolean; clientId: string | null };
+
+export function LoginForm({ next, linkError, google }: { next: string; linkError: boolean; google: GoogleSignIn }) {
   const [emailState, sendAction, sending] = useActionState<LoginState, FormData>(sendMagicLink, {
     step: "email",
     error: linkError ? "That sign-in link expired or was already used. Send a new one." : undefined,
@@ -97,20 +100,29 @@ export function LoginForm({ next, linkError, googleEnabled }: { next: string; li
     );
   }
 
+  // Supabase's redirect flow: used when Google's own button can't load.
+  const redirectButton = (
+    <Button
+      type="button"
+      variant="outline"
+      size="lg"
+      className="w-full"
+      onClick={signInWithGoogle}
+      disabled={googleLoading || sending}
+    >
+      {googleLoading ? <Loader2 className="animate-spin" /> : <GoogleIcon />} Continue with Google
+    </Button>
+  );
+
   return (
     <div className="space-y-5">
-      {googleEnabled && (
+      {google.enabled && (
         <>
-          <Button
-            type="button"
-            variant="outline"
-            size="lg"
-            className="w-full"
-            onClick={signInWithGoogle}
-            disabled={googleLoading || sending}
-          >
-            {googleLoading ? <Loader2 className="animate-spin" /> : <GoogleIcon />} Continue with Google
-          </Button>
+          {google.clientId ? (
+            <GoogleSignInButton clientId={google.clientId} next={next} fallback={redirectButton} />
+          ) : (
+            redirectButton
+          )}
           {googleError && <p role="alert" className="text-sm text-destructive">{googleError}</p>}
 
           <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">

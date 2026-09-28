@@ -69,7 +69,7 @@ redirect /d/[id] ◄────────────────────
    - Site URL: your production URL, e.g. `https://homedoctor.app`
    - Redirect URLs: add `https://homedoctor.app/auth/callback**` and `http://localhost:3000/auth/callback**`
 3. **Authentication → Emails → Magic Link** (and **Confirm signup**): paste `supabase/templates/magic_link.html`. It includes both a tap-to-sign-in link and the 6-digit code. The link works even when it opens in the mail app's own browser.
-4. **Authentication → Providers → Google**: enable it and add the client ID and secret from Google Cloud Console. The authorized redirect URI is `https://<project-ref>.supabase.co/auth/v1/callback`.
+4. **Authentication → Providers → Google**: enable it and add the client ID and secret from Google Cloud Console (a **Web application** client). The authorized redirect URI is `https://<project-ref>.supabase.co/auth/v1/callback`; add the site's main address (and any other address people sign in on) as an authorized JavaScript origin. On the main address the login page uses Google's own "Sign in with Google" button, so Google's screen names the site instead of `<project-ref>.supabase.co`; everywhere else it falls back to Supabase's redirect flow. The login button only appears once the provider is enabled.
 5. For real email volume, set up custom SMTP (Resend works) under **Authentication → Emails → SMTP**. The built-in sender is heavily rate-limited.
 
 ### 2. Environment

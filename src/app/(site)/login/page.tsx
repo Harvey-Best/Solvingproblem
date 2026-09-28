@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { isGoogleSignInEnabled } from "@/lib/auth-providers";
+import { googleClientId, isGoogleSignInEnabled } from "@/lib/auth-providers";
+import { canonicalOrigin } from "@/lib/site";
 import { safeNextPath } from "@/lib/utils";
 import { getViewer } from "@/lib/viewer";
 
@@ -46,6 +49,12 @@ export default async function LoginPage(props: PageProps<"/login">) {
 
   const [{ userId }, googleEnabled] = await Promise.all([getViewer(), isGoogleSignInEnabled()]);
   if (userId) redirect(next);
+  // Google's own button only works on origins listed in the Google OAuth
+  // client, which is set up for the main address. Anywhere else (the old
+  // address, preview deployments) the Supabase redirect flow is used instead.
+  const h = await headers();
+  const onMainAddress = (h.get("x-forwarded-host") ?? h.get("host")) === new URL(canonicalOrigin()).host;
+  const google = { enabled: googleEnabled, clientId: googleEnabled && onMainAddress ? await googleClientId() : null };
 
   return (
     <main className="mx-auto w-full max-w-md flex-1 px-4 py-8">
@@ -57,7 +66,18 @@ export default async function LoginPage(props: PageProps<"/login">) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <LoginForm next={next} linkError={searchParams.error === "link"} googleEnabled={googleEnabled} />
+          <LoginForm next={next} linkError={searchParams.error === "link"} google={google} />
+          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+            By continuing, you agree to our{" "}
+            <Link href="/terms" className="underline underline-offset-2 hover:text-foreground">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link href="/privacy" className="underline underline-offset-2 hover:text-foreground">
+              Privacy Policy
+            </Link>
+            .
+          </p>
         </CardContent>
       </Card>
     </main>

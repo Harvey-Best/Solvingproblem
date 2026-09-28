@@ -7,6 +7,11 @@ export const FOOTER_LINKS = [
   { href: "/pricing", label: "Pricing" },
 ];
 
+export const LEGAL_LINKS = [
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
+];
+
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t bg-muted/60">
@@ -28,7 +33,14 @@ export function SiteFooter() {
           we tell you to stop and call a pro, do that first.
         </p>
         <p>If you smell gas, see sparks or smoke, or anyone is hurt, leave the area and call 911.</p>
-        <p>© {new Date().getFullYear()} Home Doctor</p>
+        <p className="flex flex-wrap items-center gap-x-4">
+          <span>© {new Date().getFullYear()} Home Doctor</span>
+          {LEGAL_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="inline-flex min-h-11 items-center underline-offset-2 hover:text-foreground hover:underline">
+              {l.label}
+            </Link>
+          ))}
+        </p>
       </div>
     </footer>
   );

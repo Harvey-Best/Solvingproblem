@@ -200,6 +200,7 @@ export function HouseCallTemplate({
   afterHero,
   beforeClosing,
   footerLinks,
+  legalLinks,
 }: {
   theme: HouseCallTheme;
   /** Where the logo links. Defaults to this template's preview URL. */
@@ -212,6 +213,8 @@ export function HouseCallTemplate({
   afterHero?: React.ReactNode;
   beforeClosing?: React.ReactNode;
   footerLinks?: { href: string; label: string }[];
+  /** Small links next to the copyright line (privacy, terms). */
+  legalLinks?: { href: string; label: string }[];
 }) {
   const g = t.gradient;
   const vars = cssVars({
@@ -492,6 +495,20 @@ export function HouseCallTemplate({
               Safety escalations are there for a reason: if we tell you to stop and call a pro, do that first.
             </p>
             <p>If you smell gas, see sparks or smoke, or anyone is hurt, leave the area and call 911.</p>
+            {legalLinks && (
+              <p className="flex flex-wrap items-center gap-x-4">
+                <span>© {new Date().getFullYear()} Home Doctor</span>
+                {legalLinks.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className="inline-flex min-h-11 items-center underline-offset-2 transition-colors hover:text-(--ink) hover:underline"
+                  >
+                    {l.label}
+                  </Link>
+                ))}
+              </p>
+            )}
           </div>
         </footer>
       </div>

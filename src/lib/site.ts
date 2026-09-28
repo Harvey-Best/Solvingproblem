@@ -31,6 +31,18 @@ export function absoluteUrl(path = "/"): string {
   return `${canonicalOrigin()}${path === "/" ? "" : path}`;
 }
 
+/**
+ * Where people can reach us (privacy requests, billing questions). Set
+ * CONTACT_EMAIL in the environment; null until it is.
+ */
+export function contactEmail(): string | null {
+  const email = process.env.CONTACT_EMAIL?.trim();
+  return email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? email : null;
+}
+
+/** The date the privacy policy and terms were last changed. */
+export const LEGAL_UPDATED = "2026-09-28";
+
 /** Only production gets indexed; previews and local dev stay out of search. */
 export function isIndexable(): boolean {
   return process.env.VERCEL_ENV ? process.env.VERCEL_ENV === "production" : process.env.NODE_ENV === "production";
