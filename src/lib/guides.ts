@@ -1,4 +1,4 @@
-import type { CategoryId, DiyVerdict, Severity } from "@/lib/diagnosis-meta";
+import { CATEGORIES, type CategoryId, type DiyVerdict, type Severity } from "@/lib/diagnosis-meta";
 
 /**
  * Evergreen problem guides. Each one leads with a direct answer, then the
@@ -1341,6 +1341,28 @@ export const GUIDES: Guide[] = [
     ],
   },
 ];
+
+export type GuideGroup = { anchor: string; label: string; emoji: string; guides: Guide[] };
+
+/**
+ * Guides grouped by trade, in the same order as the category chips on
+ * /diagnose, with uncategorized ones last. Empty groups are left out.
+ */
+export function guidesByCategory(guides: Guide[] = GUIDES): GuideGroup[] {
+  const groups: GuideGroup[] = CATEGORIES.filter((c) => c.id !== "not_sure").map((c) => ({
+    anchor: c.id.replace(/_/g, "-"),
+    label: c.label,
+    emoji: c.emoji,
+    guides: guides.filter((g) => g.category === c.id),
+  }));
+  groups.push({
+    anchor: "other",
+    label: "Other problems",
+    emoji: "🏡",
+    guides: guides.filter((g) => !g.category || g.category === "not_sure"),
+  });
+  return groups.filter((g) => g.guides.length > 0);
+}
 
 export function getGuide(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
