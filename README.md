@@ -96,10 +96,11 @@ Dev-only previews that need no keys:
 
 ### 3. Stripe
 
-1. **Product and prices.** Create a product "Home Doctor" with two recurring prices, $9.99/month and $69.99/year. Put their ids in `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_YEARLY`.
+1. **Product and prices.** Create a product "Home Doctor" with two recurring prices, $9.99/month and $69.99/year. Put their ids in `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_YEARLY`. If Managed Payments is on (Stripe as merchant of record), the product needs an eligible tax code; we use `txcd_10105001` (AI as a Service, cloud based, personal use).
 2. **Webhook.** Developers → Webhooks → add endpoint `https://<your-domain>/api/stripe/webhook` with these events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `customer.subscription.paused`, `customer.subscription.resumed`, `invoice.paid`. Put its signing secret in `STRIPE_WEBHOOK_SECRET`.
 3. **Customer Portal.** Settings → Billing → Customer portal: allow cancellations, payment method updates, invoice history, and switching between the two prices.
-4. **Local testing.** Run `stripe listen --forward-to localhost:3000/api/stripe/webhook` and use its `whsec_` secret. Test card `4242 4242 4242 4242`.
+4. **Live mode.** Set up the same product, prices, portal and webhook in live mode and put them in `STRIPE_LIVE_PRICE_MONTHLY`, `STRIPE_LIVE_PRICE_YEARLY` and `STRIPE_LIVE_WEBHOOK_SECRET` next to the test ones. The app picks the set that matches `STRIPE_SECRET_KEY` (`sk_test_` or `sk_live_`), so going live is swapping that one key and redeploying.
+5. **Local testing.** Run `stripe listen --forward-to localhost:3000/api/stripe/webhook` and use its `whsec_` secret. Test card `4242 4242 4242 4242`.
 
 ### 4. Email (Resend)
 

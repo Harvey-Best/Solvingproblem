@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 
-import { env, isBillingConfigured } from "@/lib/env";
+import { env, hasStripeWebhookSecret, isBillingConfigured } from "@/lib/env";
 import { getStripe } from "@/lib/stripe";
 import { handleStripeEvent } from "@/lib/stripe-events";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -16,7 +16,7 @@ const STALE_CLAIM_SECONDS = 5 * 60;
  * gets another go.
  */
 export async function POST(request: Request) {
-  if (!isBillingConfigured() || !process.env.STRIPE_WEBHOOK_SECRET) {
+  if (!isBillingConfigured() || !hasStripeWebhookSecret()) {
     return NextResponse.json({ error: "Billing isn't configured" }, { status: 503 });
   }
 
