@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { GET as llmsTxt } from "@/app/llms.txt/route";
-import { GUIDES } from "@/lib/guides";
+import { CATEGORIES } from "@/lib/diagnosis-meta";
+import { GUIDES, guidesByCategory } from "@/lib/guides";
 import { LANDING_FAQS, faqPageJsonLd, pageMetadata, siteVerification } from "@/lib/seo";
 import { PRIVATE_PATHS, absoluteUrl, canonicalOrigin, isIndexable } from "@/lib/site";
 
@@ -81,6 +82,17 @@ describe("guides", () => {
       expect(g.costs.length).toBeGreaterThanOrEqual(3);
       expect(g.faqs.length).toBeGreaterThanOrEqual(3);
     }
+  });
+
+  it("cover every trade in the diagnose form", () => {
+    for (const c of CATEGORIES) {
+      if (c.id !== "not_sure") expect(GUIDES.some((g) => g.category === c.id), c.id).toBe(true);
+    }
+  });
+
+  it("appear exactly once on the grouped guides page", () => {
+    const grouped = guidesByCategory().flatMap((group) => group.guides.map((g) => g.slug));
+    expect(grouped.toSorted()).toEqual(GUIDES.map((g) => g.slug).toSorted());
   });
 
   it("put a stop-and-call-a-pro section on the electrical guide", () => {

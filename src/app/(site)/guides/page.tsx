@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 import { GuideCta } from "@/components/guides/guide-cta";
 import { JsonLd } from "@/components/json-ld";
 import { Badge } from "@/components/ui/badge";
-import { SEVERITY_META, categoryLabel } from "@/lib/diagnosis-meta";
-import { GUIDES } from "@/lib/guides";
+import { DIY_VERDICT_META, SEVERITY_META } from "@/lib/diagnosis-meta";
+import { guidesByCategory, type Guide } from "@/lib/guides";
 import { breadcrumbJsonLd, graph, pageMetadata } from "@/lib/seo";
 import { absoluteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,9 @@ const DESCRIPTION =
 export const metadata = pageMetadata({ title: "Home repair guides", description: DESCRIPTION, path: "/guides" });
 
 export default function GuidesPage() {
+  const groups = guidesByCategory();
+  const listed = groups.flatMap((group) => group.guides);
+
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 pb-16 pt-8">
       <JsonLd
@@ -28,7 +31,7 @@ export default function GuidesPage() {
             url: absoluteUrl("/guides"),
             mainEntity: {
               "@type": "ItemList",
-              itemListElement: GUIDES.map((g, i) => ({
+              itemListElement: listed.map((g, i) => ({
                 "@type": "ListItem",
                 position: i + 1,
                 url: absoluteUrl(`/guides/${g.slug}`),
@@ -49,33 +52,35 @@ export default function GuidesPage() {
       </h1>
       <p className="mt-3 max-w-xl text-muted-foreground">{DESCRIPTION}</p>
 
-      <ul className="mt-8 grid gap-3 sm:grid-cols-2">
-        {GUIDES.map((g) => {
-          const severity = SEVERITY_META[g.severity];
-          return (
-            <li key={g.slug}>
-              <Link
-                href={`/guides/${g.slug}`}
-                className="group flex h-full flex-col rounded-3xl border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_40px_-28px_rgba(14,27,44,0.5)]"
-              >
-                <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                  <span className="font-semibold uppercase tracking-wide">
-                    {g.category ? categoryLabel(g.category) : "Home"}
-                  </span>
-                  <Badge variant="outline" className={cn("px-2 py-0.5", severity.className)}>
-                    {severity.label}
-                  </Badge>
-                </div>
-                <h2 className="mt-3 font-display text-xl font-semibold leading-snug">{g.title}</h2>
-                <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{g.quickAnswer}</p>
-                <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-primary">
-                  Read the guide <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+      <nav aria-label="Guide categories" className="mt-6 flex flex-wrap gap-2">
+        {groups.map((group) => (
+          <a
+            key={group.anchor}
+            href={`#${group.anchor}`}
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full border bg-card px-3.5 py-2 text-sm font-medium transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
+          >
+            <span aria-hidden>{group.emoji}</span>
+            {group.label}
+            <span className="text-muted-foreground">{group.guides.length}</span>
+          </a>
+        ))}
+      </nav>
+
+      {groups.map((group) => (
+        <section key={group.anchor} id={group.anchor} aria-labelledby={`${group.anchor}-heading`} className="mt-10 scroll-mt-20">
+          <h2 id={`${group.anchor}-heading`} className="font-display text-2xl font-semibold tracking-tight">
+            <span aria-hidden className="mr-2">
+              {group.emoji}
+            </span>
+            {group.label}
+          </h2>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+            {group.guides.map((g) => (
+              <GuideCard key={g.slug} guide={g} />
+            ))}
+          </ul>
+        </section>
+      ))}
 
       <div className="mt-10">
         <GuideCta
@@ -84,5 +89,29 @@ export default function GuidesPage() {
         />
       </div>
     </main>
+  );
+}
+
+function GuideCard({ guide }: { guide: Guide }) {
+  const severity = SEVERITY_META[guide.severity];
+  return (
+    <li>
+      <Link
+        href={`/guides/${guide.slug}`}
+        className="group flex h-full flex-col rounded-3xl border bg-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[0_24px_40px_-28px_rgba(14,27,44,0.5)]"
+      >
+        <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <span className="font-semibold uppercase tracking-wide">{DIY_VERDICT_META[guide.verdict].label}</span>
+          <Badge variant="outline" className={cn("px-2 py-0.5", severity.className)}>
+            {severity.label}
+          </Badge>
+        </div>
+        <h3 className="mt-3 font-display text-xl font-semibold leading-snug">{guide.title}</h3>
+        <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">{guide.quickAnswer}</p>
+        <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-primary">
+          Read the guide <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+        </span>
+      </Link>
+    </li>
   );
 }
