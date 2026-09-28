@@ -49,21 +49,38 @@ export function formatMoney(cents: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
 }
 
+const GRADIENT = "linear-gradient(120deg,#1d4ed8,#0369a1,#0e7490)";
+
+/**
+ * Gmail's iPhone app darkens emails by inverting colors but leaves background
+ * images alone, so white text on the gradient button (and the logo's "+")
+ * turns dark on blue. These two blend layers invert it back. `u + .body` only
+ * matches inside Gmail, so every other client ignores them.
+ * https://www.hteumeuleu.com/2021/fixing-gmail-dark-mode-css-blend-modes/
+ */
+const GMAIL_DARK_FIX =
+  "<style>u + .body .gmail-screen{background:#000;mix-blend-mode:screen}u + .body .gmail-difference{background:#000;mix-blend-mode:difference}</style>";
+
+/** White text that stays white in Gmail's dark mode. Needs a background image behind it. */
+function keepWhite(html: string): string {
+  return `<span class="gmail-screen" style="display:block"><span class="gmail-difference" style="display:block">${html}</span></span>`;
+}
+
 function button(label: string, href: string): string {
-  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 8px"><tr><td style="border-radius:999px;background:${C.brand};background-image:linear-gradient(120deg,#1d4ed8,#0369a1,#0e7490)">
-<a href="${escapeHtml(href)}" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px">${escapeHtml(label)}</a>
+  return `<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:28px 0 8px"><tr><td style="border-radius:999px;background:${C.brand};background-image:${GRADIENT}">
+<a href="${escapeHtml(href)}" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px">${keepWhite(escapeHtml(label))}</a>
 </td></tr></table>`;
 }
 
 function layout({ preheader, heading, body, siteUrl }: { preheader: string; heading: string; body: string; siteUrl: string }): string {
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(heading)}</title></head>
-<body style="margin:0;padding:0;background:${C.paper}">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>${escapeHtml(heading)}</title>${GMAIL_DARK_FIX}</head>
+<body class="body" style="margin:0;padding:0;background:${C.paper}">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0">${escapeHtml(preheader)}</div>
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:${C.paper}"><tr><td align="center" style="padding:32px 16px">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px">
 <tr><td style="padding:0 4px 20px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:bold;color:${C.ink}">
-<span style="display:inline-block;width:28px;height:28px;border-radius:8px;background:${C.brand};color:#fff;text-align:center;line-height:28px;font-family:Helvetica,Arial,sans-serif;font-size:20px;vertical-align:middle">+</span>
+<span style="display:inline-block;width:28px;height:28px;border-radius:8px;background:${C.brand};background-image:${GRADIENT};color:#fff;text-align:center;line-height:28px;font-family:Helvetica,Arial,sans-serif;font-size:20px;vertical-align:middle">${keepWhite("+")}</span>
 <span style="vertical-align:middle;margin-left:8px">Home Doctor</span></td></tr>
 <tr><td style="background:${C.card};border:1px solid ${C.line};border-radius:20px;padding:32px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:${C.ink}">
 <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;color:${C.ink}">${escapeHtml(heading)}</h1>
