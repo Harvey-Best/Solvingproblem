@@ -1,21 +1,24 @@
-<!--
-  Paste into Supabase → Authentication → Emails → "Magic Link" (and "Confirm signup").
-  Subject: Your Home Doctor sign-in link
-
-  The link goes straight to our /auth/callback with a token_hash, so it works even
-  when the email opens in a different browser than the one that asked for it.
-  {{ .RedirectTo }} already carries ?next=..., hence the "&".
--->
-<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px; color: #1f2937;">
-  <h2 style="margin: 0 0 12px;">Sign in to Home Doctor</h2>
-  <p style="margin: 0 0 20px; line-height: 1.5;">Tap the button to sign in. The link works once and expires in an hour.</p>
-  <p style="margin: 0 0 24px;">
-    <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email"
-       style="display: inline-block; background: #0f766e; color: #ffffff; text-decoration: none; padding: 12px 20px; border-radius: 10px; font-weight: 600;">
-      Sign in to Home Doctor
-    </a>
-  </p>
-  <p style="margin: 0 0 8px; line-height: 1.5;">Or enter this code in the app:</p>
-  <p style="margin: 0 0 24px; font-size: 28px; font-weight: 700; letter-spacing: 6px;">{{ .Token }}</p>
-  <p style="margin: 0; font-size: 12px; color: #6b7280;">If you didn't ask to sign in, you can ignore this email.</p>
-</div>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Sign in to Home Doctor</title><style>u + .body .gmail-screen{background:#000;mix-blend-mode:screen}u + .body .gmail-difference{background:#000;mix-blend-mode:difference}</style></head>
+<body class="body" style="margin:0;padding:0;background:#f4f2ec">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0">Your sign-in code is {{ .Token }}. The link works once and expires in an hour.</div>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#f4f2ec"><tr><td align="center" style="padding:32px 16px">
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="max-width:560px">
+<tr><td style="padding:0 4px 20px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:bold;color:#0e1b2c">
+<span style="display:inline-block;width:28px;height:28px;border-radius:8px;background:#1d4ed8;background-image:linear-gradient(120deg,#1d4ed8,#0369a1,#0e7490);color:#fff;text-align:center;line-height:28px;font-family:Helvetica,Arial,sans-serif;font-size:20px;vertical-align:middle"><span class="gmail-screen" style="display:block"><span class="gmail-difference" style="display:block">+</span></span></span>
+<span style="vertical-align:middle;margin-left:8px">Home Doctor</span></td></tr>
+<tr><td style="background:#ffffff;border:1px solid #e3e1da;border-radius:20px;padding:32px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;line-height:1.55;color:#0e1b2c">
+<h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;line-height:1.2;color:#0e1b2c">Sign in to Home Doctor</h1>
+<p style="margin:0 0 14px">Tap the button to sign in. It works once and expires in an hour.</p>
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:24px 0 8px"><tr><td style="border-radius:999px;background:#1d4ed8;background-image:linear-gradient(120deg,#1d4ed8,#0369a1,#0e7490)">
+<a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email" style="display:inline-block;padding:14px 28px;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:999px"><span class="gmail-screen" style="display:block"><span class="gmail-difference" style="display:block">Sign in</span></span></a>
+</td></tr></table>
+<p style="margin:24px 0 6px">Or enter this code on the sign-in page:</p>
+<p style="margin:0 0 20px;font-family:Menlo,Consolas,'Courier New',monospace;font-size:30px;font-weight:bold;letter-spacing:6px;color:#0e1b2c">{{ .Token }}</p>
+<p style="margin:0;font-size:13px;color:#4b5563">If you didn't ask to sign in, you can ignore this email. Nobody can sign in without this link or code.</p>
+</td></tr>
+<tr><td style="padding:20px 8px 0;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#4b5563">
+Home Doctor gives general guidance, not a substitute for a licensed professional. <a href="{{ .SiteURL }}" style="color:#4b5563">Home Doctor</a>
+</td></tr>
+</table></td></tr></table>
+</body></html>
