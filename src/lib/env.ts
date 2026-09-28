@@ -47,13 +47,13 @@ export const env = {
     return required("STRIPE_SECRET_KEY");
   },
   get stripeWebhookSecret() {
-    return required("STRIPE_WEBHOOK_SECRET");
+    return required(stripeVar("STRIPE_WEBHOOK_SECRET"));
   },
   get stripePriceMonthly() {
-    return required("STRIPE_PRICE_MONTHLY");
+    return required(stripeVar("STRIPE_PRICE_MONTHLY"));
   },
   get stripePriceYearly() {
-    return required("STRIPE_PRICE_YEARLY");
+    return required(stripeVar("STRIPE_PRICE_YEARLY"));
   },
   /** Unset in local dev: emails are logged instead of sent. */
   get resendApiKey() {
@@ -68,13 +68,33 @@ export const env = {
 };
 
 /**
+ * Live mode follows the secret key: with a live key (sk_live_/rk_live_) the
+ * price ids and webhook secret come from the STRIPE_LIVE_* variables, and
+ * with a test key from the plain STRIPE_* ones. Both sets can sit in the
+ * environment side by side, so going live is just swapping STRIPE_SECRET_KEY.
+ */
+export function isStripeLive() {
+  return /^(sk|rk)_live_/.test(process.env.STRIPE_SECRET_KEY ?? "");
+}
+
+function stripeVar(name: "STRIPE_WEBHOOK_SECRET" | "STRIPE_PRICE_MONTHLY" | "STRIPE_PRICE_YEARLY") {
+  return isStripeLive() ? name.replace(/^STRIPE_/, "STRIPE_LIVE_") : name;
+}
+
+/**
  * The paywall only turns on once Stripe is set up, so people are never
  * blocked without a way to pay.
  */
 export function isBillingConfigured() {
   return Boolean(
-    process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_MONTHLY && process.env.STRIPE_PRICE_YEARLY
+    process.env.STRIPE_SECRET_KEY &&
+      process.env[stripeVar("STRIPE_PRICE_MONTHLY")] &&
+      process.env[stripeVar("STRIPE_PRICE_YEARLY")]
   );
+}
+
+export function hasStripeWebhookSecret() {
+  return Boolean(process.env[stripeVar("STRIPE_WEBHOOK_SECRET")]);
 }
 
 export function isSupabaseConfigured() {

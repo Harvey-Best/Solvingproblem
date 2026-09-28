@@ -1,7 +1,8 @@
 /**
  * Plans and trial terms as shown to people. Pure data, safe in client
  * components. The Stripe price ids live in env (STRIPE_PRICE_MONTHLY /
- * STRIPE_PRICE_YEARLY) and must match these amounts.
+ * STRIPE_PRICE_YEARLY, and STRIPE_LIVE_* for live mode) and must match
+ * these amounts.
  */
 
 export const TRIAL_DAYS = 7;
