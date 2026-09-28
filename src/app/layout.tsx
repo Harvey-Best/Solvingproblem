@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 
+import { siteVerification } from "@/lib/seo";
 import { SITE, canonicalOrigin, isIndexable } from "@/lib/site";
 
 import "./globals.css";
@@ -54,6 +55,7 @@ export const metadata: Metadata = {
     ? { index: true, follow: true, googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 } }
     : { index: false, follow: false },
   formatDetection: { telephone: false, address: false, email: false },
+  verification: siteVerification(),
 };
 
 export const viewport: Viewport = {

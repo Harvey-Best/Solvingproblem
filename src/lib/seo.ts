@@ -53,6 +53,30 @@ export function pageMetadata({
   };
 }
 
+/**
+ * A search console's ownership code from the environment. Takes the bare code
+ * or the whole <meta> tag the console shows, and ignores anything that isn't
+ * a plain token, so a bad paste never renders.
+ */
+function verificationCode(name: "GOOGLE_SITE_VERIFICATION" | "BING_SITE_VERIFICATION"): string | undefined {
+  const raw = process.env[name]?.trim();
+  if (!raw) return undefined;
+  const code = raw.match(/content=["']([^"']*)["']/)?.[1] ?? raw;
+  return /^[\w-]{8,128}$/.test(code) ? code : undefined;
+}
+
+/**
+ * The <meta> tags that prove ownership to Google Search Console and Bing
+ * Webmaster Tools (GOOGLE_SITE_VERIFICATION, BING_SITE_VERIFICATION). Pages
+ * are prerendered, so a new code takes effect on the next deploy.
+ */
+export function siteVerification(): Metadata["verification"] {
+  const google = verificationCode("GOOGLE_SITE_VERIFICATION");
+  const bing = verificationCode("BING_SITE_VERIFICATION");
+  if (!google && !bing) return undefined;
+  return { google, other: bing ? { "msvalidate.01": bing } : undefined };
+}
+
 /** Questions answered on the landing page, and in its FAQPage structured data. */
 export const LANDING_FAQS: { q: string; a: string }[] = [
   {

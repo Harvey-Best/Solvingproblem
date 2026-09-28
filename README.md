@@ -54,6 +54,7 @@ redirect /d/[id] ◄────────────────────
   - JSON-LD: Organization, WebSite, WebApplication and FAQPage on the landing page; Article, BreadcrumbList and FAQPage on guides.
   - `/llms.txt`: a markdown summary of the product, the guides and the FAQ for AI assistants, built from the same data as the pages.
   - The landing FAQ (`LANDING_FAQS`) and the guides' quick answers are written as short, self-contained answers that can be quoted directly.
+  - Search console ownership: set `GOOGLE_SITE_VERIFICATION` (Google Search Console, URL-prefix property, HTML tag method) and `BING_SITE_VERIFICATION` (or import the site into Bing from Search Console), then redeploy. Either the code or the whole `<meta>` tag works. Then submit `/sitemap.xml` in each console.
 - **Attribution.** First-touch `utm_*` and click ids (`fbclid`, `ttclid`, `gclid`, `rdt_cid`) are stored in the `hd_utm` cookie on landing. At sign-in they're copied to `users.utm`, and to `diagnoses.utm` for anonymous runs.
 - **Analytics** (PostHog, off until `NEXT_PUBLIC_POSTHOG_KEY` is set; events are only logged without it):
   - Browser events go through `/ingest` on our own domain (rewritten to PostHog in `next.config.ts`), so ad blockers don't drop them. `src/instrumentation-client.ts` starts PostHog before hydration: pageviews on every navigation, no session replay, no click autocapture.

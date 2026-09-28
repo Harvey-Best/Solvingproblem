@@ -4,7 +4,7 @@ import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { GET as llmsTxt } from "@/app/llms.txt/route";
 import { GUIDES } from "@/lib/guides";
-import { LANDING_FAQS, faqPageJsonLd, pageMetadata } from "@/lib/seo";
+import { LANDING_FAQS, faqPageJsonLd, pageMetadata, siteVerification } from "@/lib/seo";
 import { PRIVATE_PATHS, absoluteUrl, canonicalOrigin, isIndexable } from "@/lib/site";
 
 afterEach(() => vi.unstubAllEnvs());
@@ -98,6 +98,22 @@ describe("metadata and structured data", () => {
     expect(m.twitter).toMatchObject({ title: "Guides · Home Doctor" });
     const home = pageMetadata({ title: "Home Doctor: know what's wrong", description: "d", path: "/", absoluteTitle: true });
     expect(home.openGraph).toMatchObject({ title: "Home Doctor: know what's wrong" });
+  });
+
+  it("adds search console ownership tags only for well-formed codes", () => {
+    vi.stubEnv("GOOGLE_SITE_VERIFICATION", "");
+    vi.stubEnv("BING_SITE_VERIFICATION", "");
+    expect(siteVerification()).toBeUndefined();
+    // The whole tag pasted from Search Console works as well as the bare code.
+    vi.stubEnv("GOOGLE_SITE_VERIFICATION", '<meta name="google-site-verification" content="aB3_x-9KqLmNoPqRsTuVwXyZ" />');
+    vi.stubEnv("BING_SITE_VERIFICATION", "0123456789ABCDEF0123456789ABCDEF");
+    expect(siteVerification()).toEqual({
+      google: "aB3_x-9KqLmNoPqRsTuVwXyZ",
+      other: { "msvalidate.01": "0123456789ABCDEF0123456789ABCDEF" },
+    });
+    vi.stubEnv("GOOGLE_SITE_VERIFICATION", '"><script>alert(1)</script>');
+    vi.stubEnv("BING_SITE_VERIFICATION", "");
+    expect(siteVerification()).toBeUndefined();
   });
 
   it("builds a FAQPage from the landing questions", () => {
