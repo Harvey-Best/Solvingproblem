@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
 
 import { Paywall, TrialStatus } from "@/components/billing/access-ui";
+import { JsonLd } from "@/components/json-ld";
 import { ModeTabs } from "@/components/mode-tabs";
+import { PageFaq } from "@/components/page-faq";
 import { QuoteForm } from "@/components/quote/quote-form";
 import { checkAllowance } from "@/lib/allowance";
 import { isSupabaseConfigured } from "@/lib/env";
-import { pageMetadata } from "@/lib/seo";
+import { breadcrumbJsonLd, faqPageJsonLd, graph, pageMetadata } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
+import { QUOTE_FAQS } from "@/lib/tool-faqs";
 import { getIpHash, getViewer } from "@/lib/viewer";
 
 export const metadata = pageMetadata({
@@ -34,6 +38,15 @@ export default async function QuotePage() {
 
   return (
     <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">
+      <JsonLd
+        data={graph(
+          faqPageJsonLd(QUOTE_FAQS, absoluteUrl("/quote")),
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Check a quote", path: "/quote" },
+          ])
+        )}
+      />
       <ModeTabs active="quote" />
       <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight">Check a contractor&apos;s quote</h1>
       <p className="mt-1 text-muted-foreground">
@@ -52,6 +65,7 @@ export default async function QuotePage() {
           <QuoteForm />
         </div>
       )}
+      <PageFaq id="quote-faq" faqs={QUOTE_FAQS} />
     </main>
   );
 }

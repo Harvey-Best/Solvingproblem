@@ -1,8 +1,7 @@
 import Link from "next/link";
 
-import { IdentifyViewer } from "@/components/analytics/identify-viewer";
 import { Button } from "@/components/ui/button";
-import { getViewer } from "@/lib/viewer";
+import { ViewerLinks } from "@/components/viewer-links";
 
 export function Logo() {
   return (
@@ -23,9 +22,7 @@ export function Logo() {
 /** 44px tall on phones, with tight padding so the logo and two links fit on one row at 360px. */
 const NAV_LINK = "h-11 px-2 sm:h-9 sm:px-3";
 
-export async function SiteHeader() {
-  const { userId } = await getViewer();
-
+export function SiteHeader() {
   return (
     <header className="sticky top-0 z-30 border-b bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur supports-[backdrop-filter]:bg-background/70">
       <div className="mx-auto flex h-14 w-full max-w-3xl items-center justify-between gap-1 px-4">
@@ -33,30 +30,11 @@ export async function SiteHeader() {
           <Logo />
         </Link>
         <nav className="flex items-center gap-1">
-          <IdentifyViewer userId={userId} />
           {/* Phones get guides from the footer, so the header stays one row at 360px. */}
           <Button asChild variant="ghost" size="sm" className={`${NAV_LINK} hidden sm:inline-flex`}>
             <Link href="/guides">Guides</Link>
           </Button>
-          {userId ? (
-            <>
-              <Button asChild variant="ghost" size="sm" className={NAV_LINK}>
-                <Link href="/history">History</Link>
-              </Button>
-              <Button asChild variant="ghost" size="sm" className={NAV_LINK}>
-                <Link href="/account">Account</Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button asChild variant="ghost" size="sm" className={NAV_LINK}>
-                <Link href="/pricing">Pricing</Link>
-              </Button>
-              <Button asChild variant="ghost" size="sm" className={NAV_LINK}>
-                <Link href="/login">Sign in</Link>
-              </Button>
-            </>
-          )}
+          <ViewerLinks button linkClassName={NAV_LINK} />
         </nav>
       </div>
     </header>
