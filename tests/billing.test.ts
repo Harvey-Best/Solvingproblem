@@ -140,6 +140,15 @@ describe("email templates", () => {
     expect(email.text).toContain("No card needed");
   });
 
+  it("keep the button label and logo white in Gmail's dark mode, and only there", () => {
+    const { html } = welcomeEmail({ name: "Sam", trialEndsAt: new Date("2026-10-08T12:00:00Z"), siteUrl });
+    // The blend fix is scoped to Gmail's markup (a <u> before the body), so other clients are untouched.
+    expect(html).toContain('<body class="body"');
+    expect(html).toMatch(/<style>u \+ \.body \.gmail-screen\{[^}]*mix-blend-mode:screen\}u \+ \.body \.gmail-difference\{[^}]*mix-blend-mode:difference\}<\/style>/);
+    expect(html).toMatch(/<span class="gmail-screen"[^>]*><span class="gmail-difference"[^>]*>Diagnose a problem<\/span><\/span><\/a>/);
+    expect(html).toMatch(/<span class="gmail-screen"[^>]*><span class="gmail-difference"[^>]*>\+<\/span><\/span>/);
+  });
+
   it("trial ending: says when, lists both plans, promises no surprise charge", () => {
     const inTwoDays = trialEndingEmail({ trialEndsAt: new Date(NOW.getTime() + 44 * HOUR), siteUrl, now: NOW });
     expect(inTwoDays.subject).toBe("Your Home Doctor trial ends in 2 days");
