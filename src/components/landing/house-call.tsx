@@ -251,7 +251,7 @@ export function HouseCallTemplate({
                 <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" />
               </svg>
             </span>
-            <span className="whitespace-nowrap font-display text-[22px] font-semibold tracking-tight max-[359px]:sr-only">
+            <span className="whitespace-nowrap font-display text-[18px] font-semibold tracking-tight max-[379px]:sr-only sm:text-[22px]">
               Home Doctor
             </span>
           </Link>

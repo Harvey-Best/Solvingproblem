@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Camera } from "lucide-react";
 
 import { JsonLd } from "@/components/json-ld";
 import { HouseCallTemplate } from "@/components/landing/house-call";
@@ -25,9 +26,9 @@ export const metadata = pageMetadata({
   absoluteTitle: true,
 });
 
-// 44px tall on phones, with tight padding so the logo and two links fit on one row at 360px.
+// 44px tall on phones, with tight padding so the logo, a link and the Diagnose button fit on one row at 360px.
 const navLink =
-  "inline-flex h-11 cursor-pointer items-center rounded-full px-3 text-sm font-medium transition-colors hover:bg-(--accent-soft) sm:h-9 sm:px-4";
+  "inline-flex h-11 cursor-pointer items-center rounded-full px-2 text-sm font-medium transition-colors hover:bg-(--accent-soft) sm:h-9 sm:px-4";
 
 function LandingNav() {
   return (
@@ -36,7 +37,14 @@ function LandingNav() {
       <Link href="/guides" className={`${navLink} max-sm:hidden`}>
         Guides
       </Link>
-      <ViewerLinks linkClassName={navLink} pricingClassName="max-sm:hidden" />
+      <ViewerLinks linkClassName={navLink} pricingClassName="max-sm:hidden" historyClassName="max-sm:hidden" />
+      <Link
+        href="/diagnose"
+        className="ml-1 inline-flex h-11 items-center gap-1.5 rounded-full bg-(image:--grad) bg-left px-4 text-sm font-semibold text-(--accent-ink) shadow-[0_10px_20px_-12px_var(--accent)] transition-all duration-500 hover:bg-right active:scale-[0.97] sm:h-9 sm:px-4"
+        style={{ backgroundSize: "200% 100%" }}
+      >
+        <Camera className="size-4 max-sm:hidden" aria-hidden /> Diagnose
+      </Link>
     </nav>
   );
 }
