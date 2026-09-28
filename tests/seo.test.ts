@@ -5,8 +5,8 @@ import sitemap from "@/app/sitemap";
 import { GET as llmsTxt } from "@/app/llms.txt/route";
 import { CATEGORIES } from "@/lib/diagnosis-meta";
 import { GUIDES, guidesByCategory } from "@/lib/guides";
-import { LANDING_FAQS, faqPageJsonLd, pageMetadata, siteVerification } from "@/lib/seo";
-import { PRIVATE_PATHS, absoluteUrl, canonicalOrigin, isIndexable } from "@/lib/site";
+import { LANDING_FAQS, faqPageJsonLd, pageMetadata, siteVerification, websiteJsonLd } from "@/lib/seo";
+import { PRIVATE_PATHS, SITE, absoluteUrl, canonicalOrigin, isIndexable } from "@/lib/site";
 
 afterEach(() => vi.unstubAllEnvs());
 
@@ -126,6 +126,14 @@ describe("metadata and structured data", () => {
     vi.stubEnv("GOOGLE_SITE_VERIFICATION", '"><script>alert(1)</script>');
     vi.stubEnv("BING_SITE_VERIFICATION", "");
     expect(siteVerification()).toBeUndefined();
+  });
+
+  it("gives Google a site name and descriptions that fit in a result", () => {
+    const site = websiteJsonLd();
+    expect(site).toMatchObject({ "@type": "WebSite", name: "Home Doctor" });
+    expect(site.alternateName).toContain("Home Doctor App");
+    expect(SITE.description.length).toBeLessThanOrEqual(155);
+    expect(SITE.shortDescription.length).toBeLessThanOrEqual(155);
   });
 
   it("builds a FAQPage from the landing questions", () => {

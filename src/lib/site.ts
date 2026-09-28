@@ -5,11 +5,14 @@
 export const SITE = {
   name: "Home Doctor",
   tagline: "Point your phone at the problem. Know what's wrong in 30 seconds.",
-  /** One-sentence entity description. Search engines and AI answers quote this. */
+  /**
+   * One-sentence entity description. Search engines and AI answers quote this,
+   * so it stays under ~155 characters and never gets cut off in a snippet.
+   */
   description:
-    "Home Doctor is a web app that diagnoses household problems from a photo: what it is, how urgent it is, whether you can fix it yourself, what parts to buy, and what a pro should charge.",
+    "Home Doctor is a web app that diagnoses home problems from a photo: the likely cause, how urgent it is, whether to DIY or call a pro, and a fair price.",
   shortDescription:
-    "Snap a photo of a leak, crack, noise or dead outlet. Get the likely cause, how urgent it is, DIY steps with parts and prices, and a fair price range for a pro.",
+    "Snap a photo of a leak, crack, noise or dead outlet. Get the likely cause, how urgent it is, DIY steps with parts and prices, and a fair pro price.",
   locale: "en_US",
   themeColor: "#f4f2ec",
   brandColor: "#1d4ed8",
