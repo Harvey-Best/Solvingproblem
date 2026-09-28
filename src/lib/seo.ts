@@ -137,6 +137,8 @@ export function websiteJsonLd(): JsonLd {
     "@type": "WebSite",
     "@id": SITE_ID(),
     name: SITE.name,
+    // Google's site-name fallbacks, used instead of the bare domain if it won't take "Home Doctor" alone.
+    alternateName: ["Home Doctor App", "GetHomeDoctor"],
     url: absoluteUrl("/"),
     description: SITE.description,
     inLanguage: "en-US",
