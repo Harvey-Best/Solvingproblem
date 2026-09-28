@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Camera } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { ViewerLinks } from "@/components/viewer-links";
@@ -11,15 +12,15 @@ export function Logo() {
           <path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z" />
         </svg>
       </span>
-      {/* Below 360px only the mark shows, so the header stays one row. */}
-      <span className="whitespace-nowrap font-display text-[21px] font-semibold tracking-tight max-[359px]:sr-only">
+      {/* Below 380px only the mark shows, so the header stays one row with the Diagnose button. */}
+      <span className="whitespace-nowrap font-display text-[18px] font-semibold tracking-tight max-[379px]:sr-only sm:text-[21px]">
         Home Doctor
       </span>
     </span>
   );
 }
 
-/** 44px tall on phones, with tight padding so the logo and two links fit on one row at 360px. */
+/** 44px tall on phones, with tight padding so the logo, a link and the Diagnose button fit on one row at 360px. */
 const NAV_LINK = "h-11 px-2 sm:h-9 sm:px-3";
 
 export function SiteHeader() {
@@ -34,7 +35,13 @@ export function SiteHeader() {
           <Button asChild variant="ghost" size="sm" className={`${NAV_LINK} hidden sm:inline-flex`}>
             <Link href="/guides">Guides</Link>
           </Button>
-          <ViewerLinks button linkClassName={NAV_LINK} />
+          {/* On phones, Pricing is in the footer and History is on the Account page. */}
+          <ViewerLinks button linkClassName={NAV_LINK} pricingClassName="max-sm:hidden" historyClassName="max-sm:hidden" />
+          <Button asChild size="sm" className="ml-1 h-11 px-4 sm:h-9 sm:px-3.5">
+            <Link href="/diagnose">
+              <Camera className="max-sm:hidden" /> Diagnose
+            </Link>
+          </Button>
         </nav>
       </div>
     </header>

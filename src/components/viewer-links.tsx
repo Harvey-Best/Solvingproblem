@@ -53,11 +53,14 @@ function useViewer(): ViewerState {
 export function ViewerLinks({
   linkClassName,
   pricingClassName,
+  historyClassName,
   button = false,
 }: {
   linkClassName: string;
   /** Extra classes for the Pricing link (e.g. hidden on phones). */
   pricingClassName?: string;
+  /** Extra classes for the History link (e.g. hidden on phones, where Account links to it). */
+  historyClassName?: string;
   /** Render as ghost Buttons (site header) instead of plain links (landing). */
   button?: boolean;
 }) {
@@ -65,9 +68,9 @@ export function ViewerLinks({
 
   if (!viewer.known) return <span aria-hidden className="inline-block h-11 w-32 sm:h-9" />;
 
-  const links = viewer.userId
+  const links: { href: string; label: string; className?: string }[] = viewer.userId
     ? [
-        { href: "/history", label: "History" },
+        { href: "/history", label: "History", className: historyClassName },
         { href: "/account", label: "Account" },
       ]
     : [
