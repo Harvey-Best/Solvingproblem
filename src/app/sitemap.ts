@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { GUIDES } from "@/lib/guides";
-import { absoluteUrl } from "@/lib/site";
+import { LEGAL_UPDATED, absoluteUrl } from "@/lib/site";
 
 const newestGuide = GUIDES.map((g) => g.reviewed).sort().at(-1);
 
@@ -11,6 +11,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/diagnose"), changeFrequency: "monthly", priority: 0.8 },
     { url: absoluteUrl("/quote"), changeFrequency: "monthly", priority: 0.7 },
     { url: absoluteUrl("/pricing"), changeFrequency: "monthly", priority: 0.6 },
+    { url: absoluteUrl("/privacy"), lastModified: LEGAL_UPDATED, changeFrequency: "yearly", priority: 0.2 },
+    { url: absoluteUrl("/terms"), lastModified: LEGAL_UPDATED, changeFrequency: "yearly", priority: 0.2 },
     { url: absoluteUrl("/guides"), lastModified: newestGuide, changeFrequency: "weekly", priority: 0.8 },
     ...GUIDES.map((g) => ({
       url: absoluteUrl(`/guides/${g.slug}`),

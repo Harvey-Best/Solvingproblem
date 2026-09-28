@@ -5,7 +5,7 @@ import { JsonLd } from "@/components/json-ld";
 import { HouseCallTemplate } from "@/components/landing/house-call";
 import { Faq, GuidesTeaser, HowItWorks } from "@/components/landing/landing-sections";
 import { BLUE } from "@/components/landing/themes";
-import { FOOTER_LINKS } from "@/components/site-footer";
+import { FOOTER_LINKS, LEGAL_LINKS } from "@/components/site-footer";
 import { TrackOnMount } from "@/components/track-on-mount";
 import {
   LANDING_FAQS,
@@ -87,6 +87,7 @@ export default function LandingPage() {
           </>
         }
         footerLinks={FOOTER_LINKS}
+        legalLinks={LEGAL_LINKS}
       />
     </>
   );

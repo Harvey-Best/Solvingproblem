@@ -69,6 +69,34 @@ export async function verifyEmailCode(_prev: LoginState, formData: FormData): Pr
   redirect(next);
 }
 
+/**
+ * Finishes Google's own "Sign in with Google" button: the browser hands us the
+ * ID token Google issued for this site, plus the nonce it asked Google to
+ * embed (so a token lifted from elsewhere can't be replayed). Server actions
+ * only run for same-origin posts, and the token came from a Google popup in
+ * this browser, so this browser's anonymous work is safe to claim.
+ */
+export async function signInWithGoogleCredential(
+  credential: string,
+  nonce: string,
+  nextPath: string
+): Promise<{ redirectTo: string } | { error: string }> {
+  const failed = { error: "Google sign-in didn't work. Please try again, or use email." };
+  if (typeof credential !== "string" || credential.length > 8192 || typeof nonce !== "string" || nonce.length > 256) {
+    return failed;
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithIdToken({ provider: "google", token: credential, nonce });
+  if (error || !data.user) {
+    console.error("signInWithIdToken failed", error?.message);
+    return failed;
+  }
+
+  await onSignedIn(data.user.id, { claimWork: true });
+  return { redirectTo: safeNextPath(nextPath) };
+}
+
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();

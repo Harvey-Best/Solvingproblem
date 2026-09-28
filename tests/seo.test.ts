@@ -50,6 +50,8 @@ describe("sitemap", () => {
     expect(urls).toContain("https://homedoctor.app");
     expect(urls).toContain("https://homedoctor.app/diagnose");
     expect(urls).toContain("https://homedoctor.app/guides");
+    expect(urls).toContain("https://homedoctor.app/privacy");
+    expect(urls).toContain("https://homedoctor.app/terms");
     for (const g of GUIDES) expect(urls).toContain(`https://homedoctor.app/guides/${g.slug}`);
     for (const p of PRIVATE_PATHS) expect(urls.some((u) => u.includes(p))).toBe(false);
   });

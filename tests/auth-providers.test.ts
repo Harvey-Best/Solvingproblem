@@ -47,3 +47,47 @@ describe("isGoogleSignInEnabled", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+describe("googleClientId", () => {
+  const CLIENT = "1234567890-abcdef.apps.googleusercontent.com";
+
+  async function freshModule() {
+    vi.resetModules();
+    return import("@/lib/auth-providers");
+  }
+
+  function redirectTo(location: string) {
+    return new Response(null, { status: 302, headers: { location } });
+  }
+
+  it("prefers GOOGLE_CLIENT_ID without calling Supabase", async () => {
+    vi.stubEnv("GOOGLE_CLIENT_ID", CLIENT);
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const { googleClientId } = await freshModule();
+    expect(await googleClientId()).toBe(CLIENT);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("reads the client id from Supabase's Google redirect, once per hour", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(redirectTo(`https://accounts.google.com/o/oauth2/v2/auth?client_id=${CLIENT}&response_type=code`));
+    vi.stubGlobal("fetch", fetchMock);
+    const { googleClientId } = await freshModule();
+    expect(await googleClientId()).toBe(CLIENT);
+    expect(await googleClientId()).toBe(CLIENT);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toContain("https://example.supabase.co/auth/v1/authorize?provider=google");
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ redirect: "manual" });
+  });
+
+  it("returns null (so the page uses the redirect flow) when it can't find a valid id", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(redirectTo("https://accounts.google.com/o/oauth2/v2/auth?client_id=evil")));
+    expect(await (await freshModule()).googleClientId()).toBeNull();
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+    expect(await (await freshModule()).googleClientId()).toBeNull();
+    vi.stubEnv("GOOGLE_CLIENT_ID", "not-a-client-id");
+    expect(await (await freshModule()).googleClientId()).toBeNull();
+  });
+});
