@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { GET as llmsTxt } from "@/app/llms.txt/route";
+import { CATEGORIES } from "@/lib/diagnosis-meta";
 import { GUIDES, guidesByCategory } from "@/lib/guides";
 import { LANDING_FAQS, faqPageJsonLd, pageMetadata, siteVerification } from "@/lib/seo";
 import { PRIVATE_PATHS, absoluteUrl, canonicalOrigin, isIndexable } from "@/lib/site";
@@ -80,6 +81,12 @@ describe("guides", () => {
       expect(g.causes.length).toBeGreaterThanOrEqual(3);
       expect(g.costs.length).toBeGreaterThanOrEqual(3);
       expect(g.faqs.length).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it("cover every trade in the diagnose form", () => {
+    for (const c of CATEGORIES) {
+      if (c.id !== "not_sure") expect(GUIDES.some((g) => g.category === c.id), c.id).toBe(true);
     }
   });
 
