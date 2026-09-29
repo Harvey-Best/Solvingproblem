@@ -63,6 +63,64 @@ describe("track (browser)", () => {
     posthog.__loaded = true;
     expect(() => track("followup_sent", { turn: 1 })).not.toThrow();
   });
+
+  it("also sends events to Google Analytics when its tag is on the page", () => {
+    const gtag = vi.fn();
+    vi.stubGlobal("window", { gtag });
+    try {
+      track("diagnosis_complete", { severity: "low" });
+      track("landing_view");
+      expect(gtag).toHaveBeenCalledWith("event", "diagnosis_complete", { severity: "low" });
+      expect(gtag).toHaveBeenCalledWith("event", "landing_view", {});
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("swallows Google Analytics errors", () => {
+    vi.stubGlobal("window", {
+      gtag: () => {
+        throw new Error("boom");
+      },
+    });
+    try {
+      expect(() => track("landing_view")).not.toThrow();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+});
+
+describe("initGoogleAnalytics (browser)", () => {
+  async function load() {
+    vi.resetModules();
+    return (await import("@/lib/google-analytics")).initGoogleAnalytics;
+  }
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("queues js and config ahead of any event when a measurement ID is set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_ID", "G-TEST123");
+    const win: Window = {} as Window;
+    vi.stubGlobal("window", win);
+    (await load())();
+    track("landing_view");
+    const queued = (win.dataLayer ?? []).map((args) => Array.from(args as IArguments).slice(0, 2));
+    expect(queued[0][0]).toBe("js");
+    expect(queued.slice(1)).toEqual([
+      ["config", "G-TEST123"],
+      ["event", "landing_view"],
+    ]);
+  });
+
+  it("does nothing without a valid measurement ID", async () => {
+    vi.stubEnv("NEXT_PUBLIC_GA_ID", "not-an-id");
+    const win: Window = {} as Window;
+    vi.stubGlobal("window", win);
+    (await load())();
+    expect(win.gtag).toBeUndefined();
+    expect(win.dataLayer).toBeUndefined();
+  });
 });
 
 describe("syncIdentity (browser)", () => {

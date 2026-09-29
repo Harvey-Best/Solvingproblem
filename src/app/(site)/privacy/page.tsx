@@ -94,7 +94,10 @@ export default function PrivacyPage() {
           <li><strong>Stripe:</strong> payments and subscriptions.</li>
           <li><strong>Resend:</strong> sending our service emails.</li>
           <li><strong>PostHog:</strong> product analytics.</li>
-          <li><strong>Google:</strong> only if you choose to sign in with Google.</li>
+          <li>
+            <strong>Google:</strong> Google Analytics, to count visits and see how people find us, and sign-in if you
+            choose to sign in with Google.
+          </li>
         </ul>
         <p>We may also disclose information if the law requires it.</p>
       </LegalSection>
@@ -116,7 +119,7 @@ export default function PrivacyPage() {
           </li>
           <li><strong>A sign-in check</strong> (one hour) makes sure sign-in links come back to the browser that asked for them.</li>
           <li><strong>A referral note</strong> (90 days) records how you found us, such as a link or an ad.</li>
-          <li><strong>Analytics cookies</strong> from PostHog, as described above.</li>
+          <li><strong>Analytics cookies</strong> from Google Analytics and PostHog, as described above.</li>
         </ul>
         <p>We don&apos;t use advertising cookies.</p>
       </LegalSection>

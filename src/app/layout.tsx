@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 
+import { GoogleAnalytics } from "@/components/google-analytics";
 import { siteVerification } from "@/lib/seo";
 import { SITE, canonicalOrigin, isIndexable } from "@/lib/site";
 
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col font-sans">
         {children}
         <Toaster position="top-center" richColors />
+        <GoogleAnalytics />
       </body>
     </html>
   );
