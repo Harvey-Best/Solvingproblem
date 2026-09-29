@@ -1,5 +1,7 @@
 import posthog from "posthog-js";
 
+import { initGoogleAnalytics } from "@/lib/google-analytics";
+
 // Product analytics (src/lib/analytics.ts). Runs before hydration, so track()
 // works from the first render. Off until a project key is set.
 const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -26,3 +28,7 @@ if (key) {
     console.error("posthog init failed", err);
   }
 }
+
+// Google Analytics: gtag() must exist before hydration, or events sent on
+// mount are lost. The library itself loads later (src/components/google-analytics.tsx).
+initGoogleAnalytics();

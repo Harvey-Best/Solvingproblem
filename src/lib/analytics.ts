@@ -3,7 +3,8 @@ import posthog from "posthog-js";
 /**
  * Product analytics in the browser. PostHog is set up in
  * src/instrumentation-client.ts, only when NEXT_PUBLIC_POSTHOG_KEY is set;
- * without it events go to the dev console. Properties are snake_case and never
+ * without it events go to the dev console. Events also go to Google Analytics
+ * when NEXT_PUBLIC_GA_ID is set. Properties are snake_case and never
  * carry PII (no emails, no free-text descriptions).
  */
 export type AnalyticsEvent =
@@ -20,12 +21,22 @@ export type AnalyticsEvent =
   | "result_shared";
 
 export function track(event: AnalyticsEvent, properties?: Record<string, unknown>) {
+  sendToGoogleAnalytics(event, properties);
   if (!posthog.__loaded) {
     if (process.env.NODE_ENV !== "production") console.debug("[track]", event, properties ?? {});
     return;
   }
   try {
     posthog.capture(event, properties);
+  } catch {
+    // Analytics never breaks the app.
+  }
+}
+
+/** The same events go to Google Analytics when it's on (src/lib/google-analytics.ts). */
+function sendToGoogleAnalytics(event: AnalyticsEvent, properties?: Record<string, unknown>) {
+  try {
+    if (typeof window !== "undefined") window.gtag?.("event", event, properties ?? {});
   } catch {
     // Analytics never breaks the app.
   }

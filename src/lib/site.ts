@@ -44,7 +44,7 @@ export function contactEmail(): string | null {
 }
 
 /** The date the privacy policy and terms were last changed. */
-export const LEGAL_UPDATED = "2026-09-28";
+export const LEGAL_UPDATED = "2026-09-29";
 
 /** Only production gets indexed; previews and local dev stay out of search. */
 export function isIndexable(): boolean {
